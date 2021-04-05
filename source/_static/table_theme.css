@@ -1,0 +1,233 @@
+.fullcircle {
+  display: inline-block;
+  position: relative;
+  width: 25px;
+  height: 25px;
+  border: 3px solid black;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #009E2C;
+}
+
+.emptycircle {
+  display: inline-block;
+  position: relative;
+  width: 25px;
+  height: 25px;
+  border: 3px solid black;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.halfcircle {
+  display: inline-block;
+  position: relative;
+  width: 25px;
+  height: 25px;
+  border: 3px solid black;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.halfcircle:after, .halfcircle:before {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 50%;
+}
+.halfcircle:after {
+  background: #009E2C;
+  left: -1px;
+}
+.halfcircle:before {
+  background: #FFFFFF;
+  right: -2px;
+}
+
+.comparison {
+    max-width:1500px;
+    margin:0 auto;
+    font:18px/1.4 "Helvetica Neue",Helvetica,Arial,sans-serif;
+    text-align:center;
+    padding:10px;
+  }
+  
+.comparison table {
+  width:100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+  border-bottom:1px solid #CCC;
+}
+
+.comparison td, .comparison th {
+  border-right:1px solid #CCC;
+  empty-cells: show;
+  padding:10px;
+}
+
+.compare-heading {
+  font-size:18px;
+  font-weight:bold !important;
+  border-bottom:0 !important;
+  padding-top:10px !important;
+}
+
+.comparison tbody tr:nth-child(odd) {
+  display:none;
+}
+
+.comparison .compare-row {
+  background:#F5F5F5;
+}
+
+.comparison .first-col {
+  background:#F5F5F5;
+  width: 1400px;
+}
+
+.comparison .tickblue {
+  color:#0078C1;
+}
+
+.comparison .tickgreen {
+  color:#009E2C;
+}
+
+.comparison th {
+  font-weight:normal;
+  padding:0;
+  border-bottom:1px solid #CCC;
+}
+
+.comparison tr td:first-child {
+  text-align:left;
+}
+  
+.comparison .qbse, .comparison .qbo, .comparison .tl {
+  color:#FFF;
+  padding:10px;
+  font-size:18px;
+  border-right:1px solid #CCC;
+  border-bottom:0;
+}
+
+.comparison .tl2 {
+  border-right:0;
+}
+
+.comparison .qbse {
+  background:#0078C1;
+  border-top-left-radius: 3px;
+  border-left:0px;
+}
+
+.comparison .qbo {
+  background:#009E2C;
+  border-top-right-radius: 3px;
+  border-right:0px;
+}
+
+.comparison .qbs {
+  background:#eaeceb;
+  border-top-right-radius: 3px;
+  border-right:0px;
+  font-weight:bold !important;
+}
+
+.comparison .price-info {
+  padding:5px 15px 15px 15px;
+  font-size: 18px;
+}
+
+.comparison .price-was {
+  color:#999;
+  text-decoration: line-through;
+}
+
+.comparison .price-now, .comparison .price-now span {
+  color:#ff5406;
+}
+
+.comparison .price-now span {
+  font-size:32px;
+}
+
+.comparison .price-small {
+    font-size: 18px !important;
+    position: relative;
+    top: -11px;
+    left: 2px;
+}
+
+.comparison .price-buy {
+  background:#ff5406;
+  padding:10px 20px;
+  font-size:18px;
+  display:inline-block;
+  color:#FFF;
+  text-decoration:none;
+  border-radius:3px;
+  text-transform:uppercase;
+  margin:5px 0 10px 0;
+}
+
+.comparison .price-try {
+  font-size:18px;
+}
+
+.comparison .price-try a {
+  color:#202020;
+}
+
+@media (max-width: 767px) {
+  .comparison td:first-child, .comparison th:first-child {
+    display: none;
+  }
+  .comparison tbody tr:nth-child(odd) {
+    display:table-row;
+    background:#F7F7F7;
+  }
+  .comparison .row {
+    background:#FFF;
+  }
+  .comparison td, .comparison th, .cell {
+    border:1px solid #CCC;
+  }
+  .price-info {
+  border-top:0 !important;
+  
+}
+  
+}
+
+@media (max-width: 639px) {
+  .comparison .price-buy {
+    padding:5px 10px;
+  }
+  .comparison td, .comparison th {
+    padding:10px 5px;
+  }
+  .comparison .hide-mobile {
+    display:none;
+  }
+  .comparison .price-now span {
+  font-size:16px;
+}
+
+.comparison .price-small {
+    font-size: 16px !important;
+    top: 0;
+    left: 0;
+}
+  .comparison .qbse, .comparison .qbo {
+    font-size:18px;
+    padding:10px 5px;
+  }
+  .comparison .price-buy {
+    margin-top:10px;
+  }
+  .compare-heading {
+  font-size:18px;
+}
+}
