@@ -8,4 +8,4 @@ path (where this README is):
 
 .. code-block:: console
 
-    python -m sphinx -b html -c source/ source/public/ build/
+    python -m sphinx -b html build/
