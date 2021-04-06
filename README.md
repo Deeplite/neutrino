@@ -1,8 +1,9 @@
-# Deeplite Neutrino™
 
 <p align="center">
   <img src="docs/media/deeplite-logo-color.png" />
 </p>
+
+# Deeplite Neutrino™
 
 With the emergence of deep learning on mobile and embedded devices, AI solutions must satisfy strict computing requirements,
 which often limits performance and prevents people from moving to these devices. Deeplite created Neutrino,
