@@ -7,9 +7,9 @@ Going Deeper with Neutrino
 By default, Neutrino is wired for optimizing a classification task that has a fairly simple setup. This imposes tight constraints
 on the assumed structure of how tensors flow from the data loader, to the model, to the loss function and to the evaluation.
 
-It is possible to use the engine with a more complex and custom task setup but additional steps are required in order to make it
-work. The three main pieces are how to extract what is coming out of the data loader, the loss function and the
-evaluation function. Finally, we need some information about the optimizer used for the provided pretrained model.
+More complex and custom tasks can be supported by Neutrino by following some additional steps. The three main pieces are how to extract
+what is coming out of the data loader, the loss function and the evaluation function. Finally, we need some information about the optimizer 
+used for the provided pretrained model in order to make it all work.
 
 - :ref:`forward_pass`
     - :ref:`forward_pass_input_pattern`
@@ -28,9 +28,9 @@ evaluation function. Finally, we need some information about the optimizer used 
 Customize Forward Pass
 ======================
 
-One of the most important thing when using the engine for customized data and model is to tell it how to extract
+One of the most important things when using the engine for customized data and models is to tell it how to extract
 the tensors from the data loader and trigger forward passes on the model object. We provide a modular interface
-that needs to be implemented only on the non standard cases. Also, the interface can default to a working implementation
+that needs to be implemented only on the non-standard cases. Also, the interface can default to a working implementation
 if provided with two keywords, ``model_input_pattern`` and ``expecting_common_inputs``.
 
 .. _forward_pass_input_pattern:
@@ -156,11 +156,10 @@ implementations.
 Customize Loss Function
 =======================
 
-The next class that needs an implementation is the ``LossFunction``. This is a straightforward interface as all
-that is needed to be implemented is ``__call__`` which accepts the ``model`` and a ``batch``. ``model`` has exactly the
-same call signature as the one you have provided to the engine and ``batch`` is an element in the iteration over your data
-loader. There is much freedom as to what can happen there. It simply needs to return a ``dict`` of tensors that will be
-summed or a single tensor to yield the scalar for backprop.
+The next class that needs an implementation is the ``LossFunction``. This is a straightforward interface that needs to be implemented 
+is ``__call__`` which accepts the ``model`` and a ``batch``. ``model`` has exactly the same call signature as the one you have provided to the 
+engine and ``batch`` is an element in the iteration over your data loader. There is much freedom as to what can happen there. It simply needs 
+to return a ``dict`` of tensors that will be summed or a single tensor to yield the scalar for backprop.
 
 .. _loss_function_interface:
 
@@ -214,7 +213,7 @@ and your ``loader`` as input and it is expected to return a ``dict`` of metrics 
 .. important::
 
     You are free to return multiple evaluation metrics that we are going to report from the evaluation function.
-    However, the engine can only listen to one and this is the value that has to be specified in the config as **eval_key**.
+    However, the engine can only listen to one at a time (this is the value that has to be specified in the config as **eval_key**.)
 
 .. _eval_function_interface:
 
@@ -258,7 +257,7 @@ The following example shows how to implement top1 accuracy eval function for cla
 Customize Optimizer
 ===================
 
-It is important that the optimizer used to train the model is the same as the one we will used internally.
+It is important that the optimizer used to train the model is the same as the one we will use internally.
 There are two ways to bring your optimizer into the engine:
 
 1. A ``dict`` format enables an optimizer directly importable from the framework library. The ``dict`` needs to have a

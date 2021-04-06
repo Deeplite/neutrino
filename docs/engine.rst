@@ -3,12 +3,12 @@ Get Started with Neutrino
 *************************
 
 Neutrino is a deep learning library for optimizing and accelerating deep neural networks to make them faster,
-smaller and more power efficient. Neural network designers can specify a variety of pre-trained models, datasets and
+smaller and more energy-efficient. Neural network designers can specify a variety of pre-trained models, datasets and
 target computation constraints and ask the engine to optimize the network. High-level APIs are provided to make the
 optimization process easy and transparent to the user. Neutrino can be biased to concentrate on compression (relative to
 disk size taken by the model) or latency (forward call's execution time) optimization.
 
-.. figure:: engine_figure.png
+.. figure:: media/engine_figure.png
    :align: center
 
 .. note::
@@ -35,7 +35,7 @@ Follow these simple steps to learn how to use Neutrino in your project.
 Choose a Framework
 ==================
 
-Neutrino supports PyTorch (and TensorFlow very soon) framework. This comes as separate package and once it is
+Neutrino supports PyTorch (and TensorFlow very soon) framework. This comes as a separate package and once
 installed, the framework object needs to be instantiated and given to the engine.
 
 .. code-block:: python
@@ -101,8 +101,8 @@ Example:
 Choose a Model
 ==============
 
-The next step is defining the pre-trained model as the reference model which you want to optimize.
-You can take your own pre-trained custom model or take one publicly available. We assume the model you use
+The next step is defining the pre-trained model as the reference model you want to optimize.
+You can take your own pre-trained custom model or use a model that is publicly available. We assume the model you will use
 is also compatible with the framework you choose, for example a torch model will be a subclass of
 ``torch.nn.Module``. Alternatively, you can use one of the pretrained models from :ref:`nt_zoo`.
 
@@ -131,9 +131,9 @@ Example:
 Run Optimization Engine
 =======================
 
-You need to instantiate from ``Neutrino`` class and pass the required arguments ``data_splits``, ``reference_model`` and ``framework``.
+We provide a simple yet powerful process with multiple user-guided controls to optimize your models. First, you need to instantiate from ``Neutrino`` class and pass the required arguments ``data_splits``, ``reference_model`` and ``framework``.
 Furthermore, a ``config`` dictionary with at least a **delta** key needs to be supplied. This value is crucial as it defines
-how much tolerance you have for performance drops you wish to trade off (accuracy versus model size, latency etc.).
+the tolerable performance drop you wish to trade-off (accuracy versus model size, latency etc.).
 Finally, a choice for the ``optimization`` key needs to be taken into consideration as it fundamentally alters how the
 engine will optimize your model.
 
@@ -155,8 +155,8 @@ optimization
 ^^^^^^^^^^^^
 
     Select which mode you want to use the engine based on your key optimization criteria. The engine currently supports
-    ``compression`` or ``latency`` mode: compression focuses purely on the bytes the model will occupy in terms of disk size.
-    latency produces a model that will execute faster.
+    ``compression`` or ``latency`` mode: compression maximizes reduction of the bytes the model will occupy in terms of disk size.
+    latency maximizes reduction of the model execution time. Keep in mind compression mode may also improve latency and vice versa.
 
     .. note::
         The default behavior is **compression**.
@@ -164,7 +164,7 @@ optimization
 level
 ^^^^^
 
-    The engine has three available levels of optimization for you to control how much computing resources you want to
+    The engine has three levels of optimization for you to control how much computing resources you want to
     allocate to the process. By default it is on level 1. Please note that level 3 may take roughly twice as long to
     complete than level 1, but level 3 will produce a more compressed result. Currently, the engine only supports level 1
     for object detection tasks. This option is not available for `optimization=latency`.
@@ -172,14 +172,14 @@ level
 deepsearch
 ^^^^^^^^^^
 
-    In conjunction with `levels`, it is possible to use the `deepsearch` flag. This activates a more fine
-    grained optimization which can consume most of the `delta`, however it will slow down the process. This option is not
+    In conjunction with `levels`, it is possible to use the `deepsearch` flag. This is a powerful function that will produce even more optimized results. It activates a more fine
+    grained optimization search to consume the most of the allotted `delta`, however it will make the optimization process longer . This option is not
     available for `optimization=latency`.
 
 device
 ^^^^^^
 
-    Whether to use **GPU** or **CPU** for the optimization process. It is not possible to switch from CPU to GPU after initializing
+    Whether to use **GPU** or **CPU** for the optimization process. This is typically the same machine you would use to train your model. For modern deep learning and computer vision models/datasets, we recommend to use GPU. Keep in mind that 'device' does NOT dictate the device you deploy your model on for inference. Once you start a job, it is not possible to switch from CPU to GPU after initializing
     the engine on CPU.
 
 
@@ -249,7 +249,7 @@ Finally, you just need to call `run` function from ``Neutrino`` class to start t
 Output
 ------
 
-You can get the pytorch object of the optimized model from ``Neutrino.run()`` function call. The engine also exports
+You can get the PyTorch object of the optimized model from ``Neutrino.run()`` function call. The engine also exports
 the reference model in FP32 and the optimized model in FP32 or FP16 (See :ref:`fp16`) in **onnx format**
 with dynamic input size and **pytorch script** format as follow:
 
@@ -264,11 +264,11 @@ with dynamic input size and **pytorch script** format as follow:
 
 .. important::
 
-    For classification models, the community version returns the second best `opt_model` at the end of the optimization process. Consider upgrading to the production version to obtain the best optimized model produced by Deeplite Neutrino. Refer :ref:`how to upgrade <feature_comparison>`.
+    For classification models, the community version returns the second best `opt_model` at the end of the optimization process. Consider upgrading to the production version to obtain the most optimized model produced by Deeplite Neutrino. Refer :ref:`how to upgrade <feature_comparison>`.
 
 .. important::
 
-    For object detection and segmentation models, the community version displays the results of the optimization process including all the optimized metric values. To obtain the optimized model produced by Deeplite Neutrino, consider upgrading to the production version. Refer :ref:`how to upgrade <feature_comparison>`.
+    For object detection and segmentation models, the community version displays the results of the optimization process, including all the optimized metric values. To obtain the optimized model produced by Deeplite Neutrino, consider upgrading to the production version. Refer :ref:`how to upgrade <feature_comparison>`.
 
 .. _type_tasks:
 
@@ -329,5 +329,5 @@ Optional environment variables that can be set to configure the Neutrino engine.
 Code Examples
 =============
 
-To make it easier for you to test, we provide some pre-defined scenarios. It is recommended to run the :ref:`example codes <torch_samples>`
-on different pre-defined models/dataset to ensure the engine works on your machines before you go with your custom model/dataset.
+To make it quick and easy for you to test Neutrino, we provide some pre-defined scenarios. It is recommended to run the :ref:`example codes <torch_samples>`
+on different pre-defined models/dataset to ensure the engine works on your machines before you optimize your custom model/dataset.

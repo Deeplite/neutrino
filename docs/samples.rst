@@ -93,9 +93,9 @@ Classification Example
 Object Detection Example
 ========================
 
-Before you start make sure that you were able to run the :ref:`classification_example` without any problem as
-object detection is more intricate. In the following example, you will see implementations
-of some interfaces required to make a non-classification task compatible with Neutrino as explained
+Before you start, make sure that you were able to run the :ref:`classification_example` without any problems, as
+object detection optimization is more intricate. In the following example, you will see implementations
+of some interfaces required to make a non-classification task compatible with Neutrino, as explained
 in :ref:`deeper`.
 
 .. _od_ssd_example:
@@ -525,7 +525,7 @@ In this section we explain how you can run the engine with classification exampl
 Running on a single GPU
 -----------------------
 
-You can use different datasets (such as imagenet, CIFAR100, VWW, subset of imagenet, MNIST) and models (such as vgg, resnet
+You can use different datasets (such as ImageNet, CIFAR100, Visual Wake Words (VWW), subset of ImageNet, MNIST) and models (such as vgg, resnet
 mobilenet, etc.) from Neutrino zoo. Please see :ref:`nt_zoo` to see the list of pre-trained models and datasets.
 It is recommended to first run the sample on CIFAR100 with the default values to make sure the engine works on your servers.
 
@@ -673,13 +673,13 @@ The output:
     2020-06-26 19:04:21 - INFO: Total execution time: 2:30:32 (d, hh:mm:ss)
     2020-12-09 15:47:00 - INFO: Log has been exported to: $NEUTRINO_HOME/logs/67CA3456-2020-12-09.log
 
-.. figure:: demo_run.gif
+.. figure:: media/demo_run.gif
    :align: center
 
 .. note::
 
-    Please note that the exploration problem is a hard problem which makes it almost impossible to estimate an accurate
-    exploration time. The engine reports an estimate for the total exploration time as "Estimated exploration time".
+    Please note that the exploration problem is a hard problem which makes it almost impossible to estimate a precise
+    exploration time. The engine reports an estimate for the total exploration time as "Estimated exploration time". Users often find the actual time is shorter than the estimated time.
     So, it is normal if "Estimated exploration time" and "Total execution time" are different.
 
 .. _run_multi_gpu:
@@ -712,7 +712,7 @@ Running on multi-gpu on multiple machines
 
 .. important::
 
-    Currently, the multi-GPU support is available only for the Production version of Deeplite Neutrino. Refer, :ref:`how to upgrade <feature_comparison>`.
+    Currently, the multi-GPU support on multiple machines is available only for the Production version of Deeplite Neutrino. Refer, :ref:`how to upgrade <feature_comparison>`.
 
 .. code-block:: console
 

@@ -8,7 +8,7 @@
 Deeplite Neutrino™ 
 ==================
 
-.. figure:: index_figure.png
+.. figure:: media/index_figure.png
 
 With the emergence of deep learning on mobile and embedded devices, AI solutions must satisfy strict computing requirements,
 which often limits performance and prevents people from moving to these devices. Deeplite created Neutrino,
@@ -29,4 +29,5 @@ The engine inputs large, initial DNN models and constraints to produce smaller, 
    samples
    zoo
    profiler
-
+   
+   

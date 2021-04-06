@@ -4,7 +4,7 @@
 deeplite-torch-zoo
 ******************
 
-The ``deeplite-torch-zoo`` package is a collection of popular CNN model architectures and their benchmark datasets for PyTorch framework. The models are grouped under different benchmark datasets and also under different task types such as classification, object detection, and segmentation. The primary aim of this ``deeplite-torch-zoo`` is to boostrap applications by starting with the most suitable pretrained models. In addition, the pretrained models from ``deeplite-torch-zoo`` could be used as a good starting point for optimizing model architectures using our :ref:`neutrino_engine`.  
+The ``deeplite-torch-zoo`` package is a collection of popular CNN model architectures and benchmark datasets for PyTorch framework. The models are grouped under different datasets and different task types such as classification, object detection, and segmentation. The primary aim of this ``deeplite-torch-zoo`` is to booststrap applications by starting with the most suitable pretrained models. In addition, the pretrained models from ``deeplite-torch-zoo`` can be used as a good starting point for optimizing model architectures using our :ref:`neutrino_engine`.  
 
 * :ref:`zoo_install`
     * :ref:`zoo_install_pip`
@@ -137,14 +137,14 @@ The following sample code loads `PASCAL VOC <http://host.robots.ox.ac.uk/pascal/
 
 .. note::
 
-    As it can be observed the data_loaders are provided based on the corresponding model (`model_name`). Different object detection models consider inputs/outputs in different formats, and thus the our `data_splits` are formatted according to the needs of the model.
+    As it can be observed the data_loaders are provided based on the corresponding model (`model_name`). Different object detection models consider inputs/outputs in different formats, and thus the `data_splits` are formatted according to the needs of the model.
 
 .. _zoo_usage_load_models:
 
 Loading Models
 --------------
 
-Models are provided with weights pretrained on specific datasets. Thus, one could load a model ``X`` pretrained on dataset ``Y``, for getting the appropriate weights. 
+Models are provided with pretrained weights on specific datasets. Thus, one could load a model ``X`` pretrained on dataset ``Y``, for getting the appropriate weights. 
 
 .. _zoo_usage_load_models_classification:
 
@@ -482,16 +482,10 @@ Models on Imagenet dataset (from torchvision)
 - **Memory Footprint:** Total memory consumed by the parameters (weights and biases) and activations (per layer) per single image (batch_size=1)
 - **Execution Time:** On current device, time required for the forward pass per single image (batch_size=1)
 
-The host machine we used to perform the benchmarks:
+The host machine specifications used to perform the reported benchmarks:
 
 - `NVIDIA TITAN V <https://www.nvidia.com/en-us/titan/titan-v/>`_
 - Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
 - 512G SSD HardDrive
 - 64G RAM
 
-
-Credit
-------
-
-- The implementation of VOC dataset and its models: [qfgaohao/pytorch-ssd](https://github.com/qfgaohao/pytorch-ssd)  
-- The implementation of CIFAR100 models: [weiaicunzai/pytorch-cifar100](https://github.com/weiaicunzai/pytorch-cifar100)  

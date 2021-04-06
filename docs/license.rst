@@ -22,9 +22,9 @@ Get a Production License
 
 .. important::
 
-    Obtaining the license key is necessary for using the production version of Neutrino and use some advanced feature capabilities.
+    Obtaining the license key is necessary for using the production version of Neutrino and some advanced feature capabilities.
 
-To obtain the license key for the Production version of Deeplite Neutrino™, kind reach out to us `via email <support@deeplite.ai>`_
+To obtain the license key for the Production version of Deeplite Neutrino™, kindly reach out to us `via email <support@deeplite.ai>`_
 
 .. _use_license:
 

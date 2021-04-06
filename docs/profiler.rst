@@ -5,11 +5,11 @@
 deeplite-profiler
 *****************
 
-.. figure:: profiler.png
+.. figure:: media/profiler.png
     :align: center
     :width: 50%
 
-To be able to use a deep learning model in research and production, it is essential to understand different performance metrics of the model, beyond accuracy.  ``deeplite-profiler`` helps in measuring the different performance metrics of a deep learning model. In addition to the existing metrics in the ``deeplite-profiler``, users could seamlessly contribute any custom metric to measure using the profiler. ``deeplite-profiler`` could also be used to compare the performance between two different deep learning models, for example, a teacher and a student model. ``deeplite-profiler`` currently supports PyTorch and TensorFlow Keras (v1) as two different backend frameworks.
+To be able to use a deep learning model in research and production, it is essential to understand different performance metrics of the model beyond just the model's accuracy.  ``deeplite-profiler`` helps to easily and effectively measure the different performance metrics of a deep learning model. In addition to the existing metrics in the ``deeplite-profiler``, users could seamlessly contribute any custom metric to measure using the profiler. ``deeplite-profiler`` could also be used to compare the performance between two different deep learning models, for example, a teacher and a student model. ``deeplite-profiler`` currently supports PyTorch and TensorFlow Keras (v1) as two different backend frameworks.
 
 * :ref:`profiler_install`
     * :ref:`profiler_install_pip`
@@ -51,7 +51,7 @@ Use following command to install the package from our internal PyPI repository.
 
 .. code-block:: console
 
-    $ git clone https://github.com/Deeplite/neutrino-profiler.git
+    $ git clone https://github.com/Deeplite/deeplite-profiler.git
     $ pip install .[`backend`]
 
 One can install specific ``backend`` modules, depending on the required framework and compute support. ``backend`` could be one of the following values
@@ -68,7 +68,7 @@ One can install specific ``backend`` modules, depending on the required framewor
 
 .. code-block:: console
 
-    $ git clone https://github.com/Deeplite/neutrino-profiler.git
+    $ git clone https://github.com/Deeplite/deeplite-profiler.git
     $ pip install -e .[`backend`]
     $ pip install -r requirements-test.txt
 
@@ -181,7 +181,7 @@ An example output of the ``deeplite-profiler`` for ``resnet18`` model using the 
 Examples
 ========
 
-A list of different examples to use ``deeplite-profiler`` to profiler different PyTorch and TensorFlow models can be found `here <https://github.com/Deeplite/neutrino-profiler/tree/main/examples>`_. (#TODO)
+A list of different examples to use ``deeplite-profiler`` to profiler different PyTorch and TensorFlow models can be found `here <https://github.com/Deeplite/deeplite-profiler/tree/master/examples>`_.
 
 .. _profiler_examples_torch:
 
@@ -229,7 +229,7 @@ Torch Example
 
 Output of the above code is as follows:
 
-.. include:: torch_profiler_output.txt
+.. include:: _static/text/torch_profiler_output.txt
     :literal:
 
 .. _profiler_examples_tf:
@@ -297,7 +297,7 @@ TensorFlow Example
 
 Output of the above code is as follows:
 
-.. include:: tf_profiler_output.txt
+.. include:: _static/text/tf_profiler_output.txt
     :literal:
 
 .. _profiler_contribute:
@@ -307,9 +307,9 @@ Contribute a Custom Metric
 
 .. note::
 
-    If you looking for an SDK documentation, please head over here (#TODO).
+    If you looking for an SDK documentation, please head over `here <https://deeplite.github.io/deeplite-profiler/>`_.
 
-The following section describes a conceptual overview on the working of ``deeplite-profiler``. This help is adding and/or contributing custom performance metrics, while profiling deep learning models. The core of ``deeplite-profiler`` is made up of three main classes, ``Profiler`` itself, ``ProfilerFunction`` and ``StatusKey``. To be able to use a custom profiling metric, the following three steps has to be performed:
+The following section describes a conceptual overview on the workings of ``deeplite-profiler``. This help in adding and/or contributing custom performance metrics while profiling deep learning models. The core of ``deeplite-profiler`` is made up of three main classes, ``Profiler`` itself, ``ProfilerFunction`` and ``StatusKey``. To be able to use a custom profiling metric, the following three steps must be performed:
 
 #. :ref:`statuskey`
 #. :ref:`profilerfunction`
@@ -331,12 +331,12 @@ Its most used abstract child is the ``Metric`` class. A metric object is compose
 * ``friendly_name``, a human friendly name as opposed to the hashable key. For example, `Computational Complexity` is a human friendly name as opposed to `flops` being the hashable key.
 * ``get_units``, units for the measuring themetric. For example, the unit of size is `bytes`, the unit of accuracy is `%`,  and the unit of execution time is `seconds`
 * ``get_comparative``, a way to compare two metrics together. It captures the sense of better or worse. For example,
-  `flops` should be smaller, `accuracy` should be higher. Refer to this enum ``Comparitive`` (#TODO) for more information.
+  `flops` should be smaller, `accuracy` should be higher. Refer to this enum `Comparitive <https://github.com/Deeplite/deeplite-profiler/blob/c5ed2d0033311630387a9cc8c41307ada3cdda52/deeplite/profiler/metrics.py#L8>`_ for more information.
 * ``get_value``, how to report the value of the metric, and is often used to take care of the scaling in the value. For example, it might be better to report "1 megabytes" rather than "1000000 bytes"
 
 Understandably, these methods have been designed for displaying and reporting the values in mind. This is essential for achieving and presenting a good, readable output of the profiled metrics. 
 
-An example ``Metric`` is shown below. A list of other existing ``Metrics`` in ``deeplite-profiler`` can be found here (#TODO).
+An example ``Metric`` is shown below. A list of other existing ``Metrics`` in ``deeplite-profiler`` can be `here <https://github.com/Deeplite/deeplite-profiler/blob/master/deeplite/profiler/metrics.py>`_.
 
 .. code-block:: python
 
@@ -379,7 +379,7 @@ The job of the ``ProfilerFunction`` class is to compute the ``StatusKey``. This 
 
 * Second, its ``__call__`` signature does not have full arbitrary freedom of any callable. Indeed, since the ``Profiler`` object does not know in advance which functions it will have, it tries to magically pipe arguments to the correct functions. Therefore, the ``__call__`` signature of a ``ProfilerFunction`` instance cannot have \*args or \*\*kwargs in it. It is very important to note, that the **instance** of ``ProfilerFunction`` cannot have \*\*kwargs. The emphasis is on the instance because it allows at least to have mid level interfaces that can contain \*args and \*\*kwargs since they wont be instantiated.
 
-Some example ``ProfilerFunction`` written in PyTorch can be found `here <https://github.com/Deeplite/deeplite-profiler/blob/main/neutrino/framework/torch_profiler/torch_profiler.py>`_ (#TODO) and some examples written in TensorFlow can be found `here <https://github.com/Deeplite/neutrino-profiler/blob/main/neutrino/framework/tf_profiler/tf_profiler.py>`_ (#TODO)
+Some example ``ProfilerFunction`` written in PyTorch can be found `here <https://github.com/Deeplite/deeplite-profiler/blob/master/deeplite/torch_profiler/torch_profiler.py>`_  and some examples written in TensorFlow can be found `here <https://github.com/Deeplite/deeplite-profiler/blob/master/deeplite/tf_profiler/tf_profiler.py>`_
 
 .. _profilerclass:
 
@@ -392,7 +392,7 @@ using it. Registering functions will build the internal dict-like structure that
 parameter. This is to make sure the ``ProfilerFunction`` you are currently registering takes precedence
 over previously registered functions.
 
-For example, a ``Profiler`` object is instantiated and all the default functions are registered. In your custom project, you have a special case for computing the model size. You can simply register it with ``override=True`` and this will be taken to compute the model size instead. However, this will raise an error if you are registering again another function
+For example, a ``Profiler`` object is instantiated and all the default functions are registered. In your custom project, you have a special case for computing the model size. You can simply register it with ``override=True`` and this will be taken to compute the model size instead. However, this will raise an error if you are registering against another function
 with ``override=True`` over model size since there is now an ambiguous priority clash.
 
 As an example, for using PyTorch a ``ProfilerFunction`` can be registered as follows,
@@ -406,7 +406,7 @@ Compute status
 ^^^^^^^^^^^^^^
 
 The main method to be implemented is the ``compute_status``, which requires a valid ``StatusKey``
-as argument and any additional arguments to be passed to the relevant ``ProfilerFunction``. Valid here really just means that there was a function registered where its ``get_bounded_status_key`` returned a ``StatusKey`` with
+an argument and any additional arguments to be passed to the relevant ``ProfilerFunction``. Valid here really just means that there was a function registered where its ``get_bounded_status_key`` returned a ``StatusKey`` with
 its ``NAME`` being this valid argument.
 
 To compute all the status at once, the class provides the method ``compute_network_status``. This
@@ -420,8 +420,8 @@ The ``Profiler`` could not call the function unambiguously.
 
 Compare
 ^^^^^^^
-A popular use case is to compare two different models (for example, a teacher and a student model) and see how they relatively perform in terms of different metrics. ``Profiler`` has the method ``compare`` to do just that. It needs another
+A popular use case is to compare two different models (for example, a teacher and a student model) and see their relative performance in terms of different metrics. ``Profiler`` has the method ``compare`` to do just that. It needs another
 profiler and accepts an additional \*\*kwargs. Internally it will call ``compute_network_status`` on
 both profiler and uses a display function to provide the comparison report.
 
-Please look at some existing examples here (#TODO) showing how to regiter profiling functions and use them to compute network status.
+Please look at some existing `examples here <https://github.com/Deeplite/deeplite-profiler/tree/master/examples>`_ showing how to register profiling functions and use them to compute network status.

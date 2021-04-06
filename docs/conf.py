@@ -102,7 +102,7 @@ html_favicon = "favicon.ico"
 html_static_path = ['_static']
 
 html_css_files = [
-    '_static/table_theme.css',
+    '_static/css/table_theme.css',
 ]
 
 # -- Options for HTMLHelp output ------------------------------------------
@@ -162,7 +162,7 @@ texinfo_documents = [
 ]
 
 def setup(app):
-    app.add_css_file('dl_theme.css')
-    app.add_css_file('table_theme.css')
+    app.add_css_file('css/dl_theme.css')
+    app.add_css_file('css/table_theme.css')
 
 
