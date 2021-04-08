@@ -1,0 +1,30 @@
+os:
+  - linux
+
+language: python
+python:
+  - "3.6"  # current default Python on Travis CI
+
+before_install:
+  - python -m pip install --upgrade pip
+
+# command to install dependencies
+install:
+  - pip install sphinx
+  - pip install sphinx_rtd_theme
+  
+# command to run tests
+script:
+  - cd docs
+  - python -m sphinx -b html . build/
+
+deploy:
+  # Prod deployment
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY_ID
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    bucket: $AWS_BUCKET
+    skip_cleanup: true
+    region: $AWS_REGION
+    upload-dir: neutrino
+    local_dir: build
