@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Deeplite/neutrino/master/docs/media/deeplite-logo-color.png?token=AOUTTFY5EM2FIXDAS7UWAIDAPBQKU" />
+  <img src="https://github.com/Deeplite/neutrino/raw/master/docs/media/deeplite-logo-color.png" />
 </p>
 
 # Deeplite Neutrino™
@@ -33,7 +33,7 @@ Neutrino™ is a deep learning library for optimizing and accelerating deep neur
 A quick glance on the results obtained using Deeplite Neutrino™ can be found in the table below. While optimizing the models, a maximum affordable drop in the performance is provided as input `delta`. For classification models, the `delta` is set to 1%, while for objection detection (OD) and segmentation models, the `delta` is set to `0.03` mAP and `0.05` mIOU, respectively. We can observe that with such low (_and, almost negligble_) drop in the performance, the classification models can be optimized upto `~30x` of its original size, while OD and segmentation models can be optimized upto `~8x` of its original size.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Deeplite/neutrino/master/docs/media/results.png?token=AOUTTF2TDE44UESYKO6MMOTAPBQS2" />
+  <img src="https://github.com/Deeplite/neutrino/raw/master/docs/media/results.png" />
 </p>
 
 # Community Release
