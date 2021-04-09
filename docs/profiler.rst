@@ -229,7 +229,7 @@ Torch Example
 
 Output of the above code is as follows:
 
-.. include:: _static/text/torch_profiler_output.txt
+.. include:: _static/content/torch_profiler_output.txt
     :literal:
 
 .. _profiler_examples_tf:
@@ -297,7 +297,7 @@ TensorFlow Example
 
 Output of the above code is as follows:
 
-.. include:: _static/text/tf_profiler_output.txt
+.. include:: _static/content/tf_profiler_output.txt
     :literal:
 
 .. _profiler_contribute:
