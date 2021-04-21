@@ -23,9 +23,9 @@ Follow these simple steps to learn how to use Neutrino in your project.
 - :ref:`run_engine`
     - :ref:`run_config`
     - :ref:`run_output`
+- :ref:`neutrino_pickle`
 - :ref:`type_tasks`
 - :ref:`performance`
-- :ref:`cache`
 - :ref:`env_variables`
 - :ref:`code_examples`
 
@@ -251,14 +251,16 @@ Output
 
 You can get the PyTorch object of the optimized model from ``Neutrino.run()`` function call. The engine also exports
 the reference model in FP32 and the optimized model in FP32 or FP16 (See :ref:`fp16`) in **onnx format**
-with dynamic input size and **pytorch script** format as follow:
+with dynamic input size, **pytorch script** format, and a proprietary **Neutrino pickle** format, as follows:
 
 .. code-block:: console
 
-    Model has been exported to pytorch jit format: /WORKING_DIR/ref_model_jit.pt
-    Model has been exported to onnx format: /WORKING_DIR/ref_model.onnx
-    Model has been exported to pytorch jit format: /WORKING_DIR/opt_model_jit.pt
-    Model has been exported to onnx format: /WORKING_DIR/opt_model.onnx
+    Reference Model has been exported to Neutrino pickle format: /WORKING_DIR/ref_model.pkl
+    Reference Model has been exported to pytorch jit format: /WORKING_DIR/ref_model_jit.pt
+    Reference Model has been exported to onnx format: /WORKING_DIR/ref_model.onnx
+    Optimized Model has been exported to Neutrino pickle format: /WORKING_DIR/opt_model.pkl
+    Optimized Model has been exported to pytorch jit format: /WORKING_DIR/opt_model_jit.pt
+    Optimized Model has been exported to onnx format: /WORKING_DIR/opt_model.onnx
     OR
     Model has been exported to onnx format: /WORKING_DIR/opt_model_fp16.onnx (if fp16 is enabled)
 
@@ -269,6 +271,21 @@ with dynamic input size and **pytorch script** format as follow:
 .. important::
 
     For object detection and segmentation models, the community version displays the results of the optimization process, including all the optimized metric values. To obtain the optimized model produced by Deeplite Neutrino, consider upgrading to the production version. Refer :ref:`how to upgrade <feature_comparison>`.
+
+.. _neutrino_pickle:
+
+Neutrino Pickle Format
+======================
+
+Neutrino saves, on the disk, both the provided reference model and the optimized model in an encrypted proprietary pickle format. This will be available in the following paths: ``/WORKING_DIR/ref_model.pkl`` and ``/WORKING_DIR/opt_model.pkl``. One can load the **Neutrino pickle** format using our custom load function, as follows,
+
+.. code-block:: python
+
+    pytorch_reference_model = neutrino.load('/WORKING_DIR/ref_model.pkl')
+    pytorch_optimized_model = neutrino.load('/WORKING_DIR/opt_model.pkl')
+
+The ``neutrino.load`` function will load the model in pickle format and return a Pytorch native object. This model can be used for further processing using **Neutrino**, or for profiling using **Deeplite Profiler**, or for any downstream applications. 
+
 
 .. _type_tasks:
 
@@ -298,19 +315,6 @@ Performance Considerations
 
 * **Model complexity** can also impact on the optimization time as well.
 
-.. _cache:
-
-Enable Neutrino Cache
-=====================
-
-To perform further optimizations faster on a reference model you can enable Neutrino Cache. To enable the cache please
-set the environment var ``NEUTRINO_CACHE=1``.
-
-.. code-block:: console
-
-    $ NEUTRINO_CACHE=1
-
-The engine will store cache data in ``$NEUTRINO_HOME/checkpoints``.
 
 .. _env_variables:
 
@@ -322,7 +326,6 @@ Optional environment variables that can be set to configure the Neutrino engine.
 * ``NEUTRINO_HOME``- The absolute path to the directory where the engine stores its data (such as checkpoints, logs, etc.) [default=~/.neutrino]
 * ``NEUTRINO_LICENSE``- Contains the license key.
 * ``NEUTRINO_LICENSE_FILE``- The absolute path where the license file can be found.
-* ``NEUTRINO_CACHE``- Enables the caching mechanism if it is set to 1. [default=0]
 
 .. _code_examples:
 
