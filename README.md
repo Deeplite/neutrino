@@ -83,7 +83,7 @@ For a list of different metrics available in the Deeplite Profiler, refer to the
 
 Neutrino™ can run in distributed mode(multi-GPU, multi-server nodes) using [horovod](https://github.com/horovod/horovod). Please note that the distributed mode is currently only availble to GPU's, CPU support is yet to be added. To be able to use distributed mode, you need to have [docker](https://www.docker.com/) installed and running on your system. The setup process is straightforward:
 
-- Get the docker file from here (https://github.com/Deeplite/neutrino/blob/master/Dockerfile.gpu).
+- Get the docker file from [here](https://github.com/Deeplite/neutrino/blob/master/Dockerfile.gpu).
 - Build your docker image:
 
 ```{.python}
@@ -95,7 +95,7 @@ Neutrino™ can run in distributed mode(multi-GPU, multi-server nodes) using [ho
 ```{.python}
     sudo nvidia-docker run -it --shm-size=32g  -v /home/JohnDoe/:/neutrino  neutrino:latest
 ```
-To test Neutrino™ in distributed mode, from within your docker container, checkout and navigate to the [neutrino-examples](https://github.com/Deeplite/neutrino-examples) repository, then run the following command:
+- To test Neutrino™ in distributed mode, from within your docker container, checkout and navigate to the [neutrino-examples](https://github.com/Deeplite/neutrino-examples) repository, then run the following command:
 
 ```{.python}
     horovodrun -np 1 -H localhost:1 python src/hello_neutrino_classifier.py --arch resnet18 --dataset cifar100 --delta 1 --horovod
