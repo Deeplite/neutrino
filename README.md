@@ -45,6 +45,10 @@ Our community edition provides all the important features to experience the powe
 
 For detailed comparison of features on our community and production editions, refer to the [documentation](https://docs.deeplite.ai/neutrino/features.html)
 
+# Get Your Free Community License
+
+The community license key is completely free-to-obtain and free-to-use. [Fill out this simple form](<https://info.deeplite.ai/community>) to obtain the license key for the Community Version of Deeplite Neutrino™.
+
 # Installation
 
 Use ``pip`` to install `neutrino-engine` from PyPi repository. We recommend creating a new python virtualenv, then pip install using the following commands.
@@ -56,10 +60,6 @@ Use ``pip`` to install `neutrino-engine` from PyPi repository. We recommend crea
 ```
 
 For other methods of installation and detailed instructions, refer to the [documentation](https://docs.deeplite.ai/neutrino/install.html)
-
-# Get Your Free Community License
-
-The community license key is completely free-to-obtain and free-to-use. [Fill out this simple form](<https://info.deeplite.ai/community>) to obtain the license key for the Community Version of Deeplite Neutrino™.
 
 # Examples
 
