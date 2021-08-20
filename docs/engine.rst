@@ -22,6 +22,7 @@ Follow these simple steps to learn how to use Neutrino in your project.
 - :ref:`choose_model`
 - :ref:`run_engine`
     - :ref:`run_config`
+    - :ref:`export`
     - :ref:`run_output`
 - :ref:`neutrino_pickle`
 - :ref:`type_tasks`
@@ -205,6 +206,18 @@ eval_split
     Name of the key in the `data_splits` dictionary on which to run the evaluation function and fetch
     the evaluation metric.
 
+.. _export:
+
+Export Formats
+^^^^^^^^^^^^^^
+
+    By default, the optimized models will be exported in :ref:`neutrino_pickle`. Additionally, we support other export formats including `PyTorch TorchScript <https://pytorch.org/docs/stable/jit.html>`_, `ONNX <https://github.com/onnx/tutorials>`_, and `Tensorflow Lite (TFLite) <https://www.tensorflow.org/lite>`_. The optimized model can be exported to more than one format: ``['onnx', 'jit', 'tflite']``
+
+    .. important::
+
+        Currently, exporting to ``jit`` and ``onnx`` is supported by default in Neutrino. If you would like to use ``tflite`` export, additionally install ``pip install deeplite-model-converter[all]``
+
+
 .. _fp16:
 
 onnx_precision
@@ -232,7 +245,8 @@ Finally, you just need to call `run` function from ``Neutrino`` class to start t
         'delta': args.delta, #(between 0 to 100), (default = 1)
         'device': args.device, # 'GPU' or 'CPU' (default = 'GPU')
         'use_horovod': args.horovod, #(boolean), (default = False)
-        'level': args.level # int {1, 2}, (default = 1)
+        'level': args.level, # int {1, 2}, (default = 1)
+        'export':{'format': ['onnx']}, # ['onnx', 'jit', 'tflite'] (default = None) 
     }
     opt_model = Neutrino(framework=TorchFramework(),
                          data=data_splits,
@@ -249,7 +263,7 @@ Finally, you just need to call `run` function from ``Neutrino`` class to start t
 Output
 ------
 
-You can get the PyTorch object of the optimized model from ``Neutrino.run()`` function call. The engine also exports
+You can get the PyTorch object of the optimized model from ``Neutrino.run()`` function call. The following output is obtained when the export format is provided as ``['onnx', 'jit']``. The engine also exports
 the reference model in FP32 and the optimized model in FP32 or FP16 (See :ref:`fp16`) in **onnx format**
 with dynamic input size, **pytorch script** format, and a proprietary **Neutrino pickle** format, as follows:
 
