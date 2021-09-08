@@ -64,7 +64,7 @@ Classification Example
         data_splits = get_data_splits_by_name(dataset_name=args.dataset,
                                               data_root=args.data_root,
                                               batch_size=args.batch_size,
-                                              num_torch_workers=args.workers,
+                                              num_workers=args.workers,
                                               device=device_map[args.device])
     
         reference_model = get_model_by_name(model_name=args.arch,
@@ -108,16 +108,16 @@ SSD Family
     import argparse
     import os
 
-    from neutrino_torch_zoo.wrappers.wrapper import get_data_splits_by_name, get_model_by_name
+    from deeplite_torch_zoo.wrappers.wrapper import get_data_splits_by_name, get_model_by_name
     from neutrino.framework.functions import LossFunction
     from neutrino.framework.torch_framework import TorchFramework
-    from neutrino.framework.torch_profiler.torch_data_loader import TorchForwardPass
-    from neutrino.framework.torch_profiler.torch_inference import TorchEvaluationFunction
+    from deeplite.torch_profiler.torch_data_loader import TorchForwardPass
+    from deeplite.torch_profiler.torch_inference import TorchEvaluationFunction
     from neutrino.job import Neutrino
     from neutrino.nlogger import getLogger
-    from neutrino_torch_zoo.wrappers.eval import yolo_eval_func
-    from neutrino_torch_zoo.src.objectdetection.ssd300.model.ssd300_loss import Loss
-    from neutrino_torch_zoo.src.objectdetection.ssd300.utils.utils import dboxes300_coco
+    from deeplite_torch_zoo.wrappers.eval import yolo_eval_voc
+    from deeplite_torch_zoo.src.objectdetection.ssd300.model.ssd300_loss import Loss
+    from deeplite_torch_zoo.src.objectdetection.ssd300.utils.utils import dboxes300_coco
 
     logger = getLogger(__name__)
 
@@ -129,7 +129,7 @@ SSD Family
 
         def _compute_inference(self, model, data_loader, **kwargs):
             # same eval for ssd than yolo
-            return yolo_eval_func(model=model, data_root=self.data_root, _set='voc', net=self.net, img_size=300)
+            return yolo_eval_voc(model=model, data_root=self.data_root, net=self.net, img_size=300)
 
 
     class SSDLoss(LossFunction):
@@ -151,7 +151,7 @@ SSD Family
     if __name__ == '__main__':
         parser = argparse.ArgumentParser()
         # model/dataset args
-        parser.add_argument('--voc_path', default='/neutrino/datasets/VOCdevkit/',
+        parser.add_argument('--voc_path', default='/neutrino/datasets/',
                             help='vockit data path contains VOC2007 and VOC2012.')
         parser.add_argument('-b', '--batch_size', type=int, metavar='N', default=8, help='mini-batch size')
         parser.add_argument('-j', '--workers', type=int, metavar='N', default=4, help='number of data loading workers')
@@ -227,13 +227,13 @@ YOLO Family
 
     from neutrino.framework.functions import LossFunction
     from neutrino.framework.torch_framework import TorchFramework
-    from neutrino.framework.torch_profiler.torch_data_loader import TorchForwardPass
-    from neutrino.framework.torch_profiler.torch_inference import TorchEvaluationFunction
+    from deeplite.torch_profiler.torch_data_loader import TorchForwardPass
+    from deeplite.torch_profiler.torch_inference import TorchEvaluationFunction
     from neutrino.job import Neutrino
     from neutrino.nlogger import getLogger
-    from neutrino_torch_zoo.wrappers.wrapper import get_data_splits_by_name, get_model_by_name
-    from neutrino_torch_zoo.wrappers.eval import yolo_eval_func
-    from neutrino_torch_zoo.src.objectdetection.yolov3.model.loss.yolo_loss import YoloV3Loss
+    from deeplite_torch_zoo.wrappers.wrapper import get_data_splits_by_name, get_model_by_name
+    from deeplite_torch_zoo.wrappers.eval import yolo_eval_voc
+    from deeplite_torch_zoo.src.objectdetection.yolov3.model.loss.yolo_loss import YoloV3Loss
 
 
     logger = getLogger(__name__)
@@ -246,7 +246,7 @@ YOLO Family
 
         def _compute_inference(self, model, data_loader, **kwargs):
             # silent **kwargs
-            return yolo_eval_func(model=model, data_root=self.data_root, _set='voc', net=self.net)
+            return yolo_eval_voc(model=model, data_root=self.data_root, net=self.net)
 
 
     class YOLOLoss(LossFunction):
@@ -354,20 +354,20 @@ UNet family
     from neutrino.framework.functions import LossFunction
     from neutrino.framework.torch_framework import TorchFramework
     from neutrino.framework.torch_nn import NativeOptimizerFactory, NativeSchedulerFactory
-    from neutrino.framework.profiler import Device
-    from neutrino.framework.torch_profiler.torch_data_loader import TorchForwardPass
-    from neutrino.framework.torch_profiler.torch_inference import TorchEvaluationFunction
+    from deeplite.profiler import Device
+    from deeplite.torch_profiler.torch_data_loader import TorchForwardPass
+    from deeplite.torch_profiler.torch_inference import TorchEvaluationFunction
     from neutrino.job import Neutrino
     from neutrino.nlogger import getLogger
 
-    from neutrino_torch_zoo.wrappers.wrapper import get_data_splits_by_name, get_model_by_name
-    from neutrino_torch_zoo.wrappers.models.segmentation.unet import unet_carvana
-    from neutrino_torch_zoo.wrappers.eval import seg_eval_func
+    from deeplite_torch_zoo.wrappers.wrapper import get_data_splits_by_name, get_model_by_name
+    from deeplite_torch_zoo.wrappers.models.segmentation.unet import unet_carvana
+    from deeplite_torch_zoo.wrappers.eval import seg_eval_func
 
-    from neutrino_torch_zoo.src.segmentation.unet_scse.repo.src.losses.multi import MultiClassCriterion
-    from neutrino_torch_zoo.src.segmentation.unet_scse.repo.src.utils.scheduler import CosineWithRestarts
-    from neutrino_torch_zoo.src.segmentation.unet_scse.repo.src.losses.multi import MultiClassCriterion
-    from neutrino_torch_zoo.src.segmentation.fcn.solver import cross_entropy2d
+    from deeplite_torch_zoo.src.segmentation.unet_scse.repo.src.losses.multi import MultiClassCriterion
+    from deeplite_torch_zoo.src.segmentation.unet_scse.repo.src.utils.scheduler import CosineWithRestarts
+    from deeplite_torch_zoo.src.segmentation.unet_scse.repo.src.losses.multi import MultiClassCriterion
+    from deeplite_torch_zoo.src.segmentation.fcn.solver import cross_entropy2d
 
     logger = getLogger(__name__)
 
