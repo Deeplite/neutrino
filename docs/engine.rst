@@ -295,10 +295,17 @@ Neutrino saves, on the disk, both the provided reference model and the optimized
 
 .. code-block:: python
 
-    pytorch_reference_model = neutrino.load('/WORKING_DIR/ref_model.pkl')
-    pytorch_optimized_model = neutrino.load('/WORKING_DIR/opt_model.pkl')
+    from neutrino.framework.torch_framework import TorchFramework
+    from neutrino.job import Neutrino
+    # load original model
+    original_model = TheModelClass(*args, **kwargs)
+    original_model.load_state_dict(torch.load(PATH))
+    # load Neutrino pickle format model
+    pytorch_optimized_model = Neutrino.load_from_pickle(TorchFramework(),
+                                                        '/WORKING_DIR/opt_model.pkl',
+                                                        original_model)
 
-The ``neutrino.load`` function will load the model in pickle format and return a Pytorch native object. This model can be used for further processing using **Neutrino**, or for profiling using **Deeplite Profiler**, or for any downstream applications. 
+The ``Neutrino.load_from_pickle`` function will load the model in pickle format and return a Pytorch native object. This model can be used for further processing using **Neutrino**, or for profiling using **Deeplite Profiler**, or for any downstream applications. 
 
 
 .. _type_tasks:
