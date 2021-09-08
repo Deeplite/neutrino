@@ -211,12 +211,21 @@ eval_split
 Export Formats
 ^^^^^^^^^^^^^^
 
-    By default, the optimized models will be exported in :ref:`neutrino_pickle`. Additionally, we support other export formats including `PyTorch TorchScript <https://pytorch.org/docs/stable/jit.html>`_, `ONNX <https://github.com/onnx/tutorials>`_, and `Tensorflow Lite (TFLite) <https://www.tensorflow.org/lite>`_. The optimized model can be exported to more than one format: ``['onnx', 'jit', 'tflite']``
+    A dictionary with the desired export format(s). By default, the optimized models will be exported in :ref:`neutrino_pickle`. Additionally, we support other export formats including `PyTorch TorchScript <https://pytorch.org/docs/stable/jit.html>`_, `ONNX <https://github.com/onnx/tutorials>`_, and `Tensorflow Lite (TFLite) <https://www.tensorflow.org/lite>`_. The optimized model can be exported to more than one format: ``['onnx', 'jit', 'tflite']``.
+    You can also specify a customized path/name of the exported model file.
 
     .. important::
 
         Currently, exporting to ``jit`` and ``onnx`` is supported by default in Neutrino. If you would like to use ``tflite`` export, additionally install ``pip install deeplite-model-converter[all]``
 
+.. code-block:: python
+
+        'export': {
+            'format': ['onnx'],
+            'kwargs': {
+                'root_path': <your_dir>
+            }
+        }
 
 .. _fp16:
 
