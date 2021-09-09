@@ -125,6 +125,8 @@ implementations.
 
 .. code-block:: python
 
+    from deeplite.profiler.data_loader import ForwardPass
+
     class ClassificationTorchForwardPass(ForwardPass):
         def __init__(self):
             super().__init__(model_input_pattern=None, expecting_common_inputs=False)
@@ -191,6 +193,8 @@ The following example shows how to implement CrossEntropy loss function by this 
 
 .. code-block:: python
 
+    from neutrino.framework.functions import LossFunction
+
     class ClassificationLoss(LossFunction):
         def __call__(self, model, batch):
             x, y = batch
@@ -232,7 +236,7 @@ The following example shows how to implement top1 accuracy eval function for cla
 .. code-block:: python
 
     from deeplite.torch_profiler.torch_inference import TorchEvaluationFunction
-    
+
     class EvalAccuracy(TorchEvaluationFunction):
         def __init__(self, device='cuda'):
             self.device = device
@@ -284,6 +288,9 @@ There are two ways to bring your optimizer into the engine:
         def make(self, native_model):
             """ Returns a native optimizer object """
 
+    # Example
+    from neutrino.framework.torch_nn import NativeOptimizerFactory
+
     class CustomOptimizerFactory(NativeOptimizerFactory):
         def make(self, native_model):
             from torch.optim import Adam
@@ -322,6 +329,9 @@ The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'eval
         def make(self, native_optimizer):
             """ Returns a native scheduler object """
 
+    # Example
+    from neutrino.framework.torch_nn import NativeSchedulerFactory
+
     class CustomSchedulerFactory(NativeSchedulerFactory):
         def make(self, native_optimizer):
             from torch.optim.lr_scheduler import MultiplicativeLR
@@ -342,6 +352,9 @@ that we do not show here all the possibilities in the ``ForwardPass`` object. We
 .. code-block:: python
 
     from deeplite.torch_profiler.torch_data_loader import TorchForwardPass as FP
+    from neutrino.framework.torch_framework import TorchFramework
+
+    framework = TorchFramework()
     forward_pass = FP(model_input_pattern=(0, '_', '_'))
     eval_func = MyEvalFunc()
 

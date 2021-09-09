@@ -200,11 +200,31 @@ eval_key
     Name of the evaluation metric the engine listens to while optimizing for `delta`. More details
     are here :ref:`type_tasks`.
 
+.. code-block:: python
+
+    class EvalAccuracy(TorchEvaluationFunction):
+        def _compute_inference(self, model, data_loader, **kwargs):
+            total_acc = ...foo accuracy calculation...
+            return {'accuracy': 100. * (total_acc / float(len(data_loader)))}
+    
+    eval_key = 'accuracy' # matches with the dictionary key returned by EvalAccuracy()
+    optimized_model = Neutrino(eval_func=EvalAccuracy(),
+                               ...foo other arguments...)
+
 eval_split
 ^^^^^^^^^^
 
     Name of the key in the `data_splits` dictionary on which to run the evaluation function and fetch
     the evaluation metric.
+
+.. code-block:: python
+
+    data_splits = {'train': foo_trainloader,
+                   'test': foo_testloader}
+    
+    eval_split = 'test' # matches with the dictionary key of data_splits for validation dataset
+    optimized_model = Neutrino(data=data_splits,
+                               ...foo other arguments...)
 
 .. _export:
 
@@ -246,6 +266,7 @@ Finally, you just need to call `run` function from ``Neutrino`` class to start t
 
 .. code-block:: python
 
+    from neutrino.framework.torch_framework import TorchFramework
     from neutrino.job import Neutrino
     config = {
         'deepsearch': args.deepsearch, #(boolean), (default = False)
@@ -257,6 +278,13 @@ Finally, you just need to call `run` function from ``Neutrino`` class to start t
         'level': args.level, # int {1, 2}, (default = 1)
         'export':{'format': ['onnx']}, # ['onnx', 'jit', 'tflite'] (default = None) 
     }
+
+    data_splits = {'train': trainloader,
+                   'test': testloader}
+
+    reference_model = TheModelClass(*args, **kwargs)
+    reference_model.load_state_dict(torch.load(PATH))
+
     opt_model = Neutrino(framework=TorchFramework(),
                          data=data_splits,
                          model=reference_model,
@@ -306,9 +334,11 @@ Neutrino saves, on the disk, both the provided reference model and the optimized
 
     from neutrino.framework.torch_framework import TorchFramework
     from neutrino.job import Neutrino
+
     # load original model
     original_model = TheModelClass(*args, **kwargs)
     original_model.load_state_dict(torch.load(PATH))
+
     # load Neutrino pickle format model
     pytorch_optimized_model = Neutrino.load_from_pickle(TorchFramework(),
                                                         '/WORKING_DIR/opt_model.pkl',
