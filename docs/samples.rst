@@ -699,11 +699,30 @@ servers. We have prepared Dockerfile on top of Horovod docker so you can get sta
 Start the optimization process and specify the number of workers on the command line as you normally would when using
 Horovod (for more information please visit `Horovod in Docker <https://github.com/horovod/horovod/blob/master/docs/docker.rst#running-on-a-single-machine>`_).
 
+* Get the docker file from `here <https://github.com/Deeplite/neutrino/blob/master/Dockerfile.gpu>`_.
+* Build your docker image:
+
+.. code-block:: console
+    
+    sudo docker build -t neutrino:latest -f Dockerfile.gpu .
+
+* Run the image with `nvidia-docker <https://github.com/NVIDIA/nvidia-docker>`_ command:
+
+.. code-block:: console
+
+    sudo nvidia-docker run -it --shm-size=32g  -v /home/JohnDoe/:/neutrino  neutrino:latest
+
+* To test Neutrino™ in distributed mode, from within your docker container, checkout and navigate to the `neutrino-examples <https://github.com/Deeplite/neutrino-examples>`_ repository, then run the following command:
+
+.. code-block:: console
+
+    horovodrun -np 1 -H localhost:1 python src/hello_neutrino_classifier.py --arch resnet18 --dataset cifar100 --delta 1 --horovod
+
+* Another example with 4 GPUs:
+
 .. code-block:: console
 
     $ horovodrun -np 4 -H localhost:4 python hello_neutrino.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 2 --deepsearch --horovod --batch_size 256
-
-`Horovod on a single machine <https://github.com/horovod/horovod/blob/master/docs/docker.rst#running-on-a-single-machine>`_
 
 .. _run_multi_multi_gpu:
 
