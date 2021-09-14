@@ -337,7 +337,6 @@ Neutrino saves, on the disk, both the provided reference model and the optimized
 
     # load original model
     original_model = TheModelClass(*args, **kwargs)
-    original_model.load_state_dict(torch.load(PATH))
 
     # load Neutrino pickle format model
     pytorch_optimized_model = Neutrino.load_from_pickle(TorchFramework(),
