@@ -36,7 +36,7 @@ Follow these simple steps to learn how to use Neutrino in your project.
 Choose a Framework
 ==================
 
-Neutrino supports PyTorch (and TensorFlow very soon) framework. This comes as a separate package and once
+Neutrino supports PyTorch (and TensorFlow soon) framework. This comes as a separate package and once
 installed, the framework object needs to be instantiated and given to the engine.
 
 .. code-block:: python
@@ -120,11 +120,11 @@ Example:
     reference_model = models.resnet18(pretrained=True)
 
     # Option 3: use Neutrino zoo
-    import neutrino_torch_zoo
-    reference_model = neutrino_torch_zoo.get_classifier_by_name(model_name=args.arch,
-                                                                dataset_name=args.dataset,
-                                                                pretrained=True,
-                                                                progress=True)
+    from deeplite_torch_zoo.wrappers.wrapper import get_model_by_name
+    reference_model = get_model_by_name(model_name=args.arch,
+                                        dataset_name=args.dataset,
+                                        pretrained=True,
+                                        progress=True)
 
 
 .. _run_engine:
@@ -198,9 +198,11 @@ eval_key
 ^^^^^^^^
 
     Name of the evaluation metric the engine listens to while optimizing for `delta`. More details
-    are here :ref:`type_tasks`.
+    are here :ref:`type_tasks` and when creating customized evaluation function :ref:`deeper`.
 
 .. code-block:: python
+    
+    from deeplite.torch_profiler.torch_inference import TorchEvaluationFunction
 
     class EvalAccuracy(TorchEvaluationFunction):
         def _compute_inference(self, model, data_loader, **kwargs):
