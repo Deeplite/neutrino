@@ -36,7 +36,7 @@ Follow these simple steps to learn how to use Neutrino in your project.
 Choose a Framework
 ==================
 
-Neutrino supports PyTorch (and TensorFlow very soon) framework. This comes as a separate package and once
+Neutrino supports PyTorch (and TensorFlow soon) framework. This comes as a separate package and once
 installed, the framework object needs to be instantiated and given to the engine.
 
 .. code-block:: python
@@ -120,11 +120,11 @@ Example:
     reference_model = models.resnet18(pretrained=True)
 
     # Option 3: use Neutrino zoo
-    import neutrino_torch_zoo
-    reference_model = neutrino_torch_zoo.get_classifier_by_name(model_name=args.arch,
-                                                                dataset_name=args.dataset,
-                                                                pretrained=True,
-                                                                progress=True)
+    from deeplite_torch_zoo.wrappers.wrapper import get_model_by_name
+    reference_model = get_model_by_name(model_name=args.arch,
+                                        dataset_name=args.dataset,
+                                        pretrained=True,
+                                        progress=True)
 
 
 .. _run_engine:
@@ -198,7 +198,20 @@ eval_key
 ^^^^^^^^
 
     Name of the evaluation metric the engine listens to while optimizing for `delta`. More details
-    are here :ref:`type_tasks`.
+    are here :ref:`type_tasks` and when creating customized evaluation function :ref:`deeper`.
+
+.. code-block:: python
+    
+    from deeplite.torch_profiler.torch_inference import TorchEvaluationFunction
+
+    class EvalAccuracy(TorchEvaluationFunction):
+        def _compute_inference(self, model, data_loader, **kwargs):
+            total_acc = ...foo accuracy calculation...
+            return {'accuracy': 100. * (total_acc / float(len(data_loader)))}
+    
+    eval_key = 'accuracy' # matches with the dictionary key returned by EvalAccuracy()
+    optimized_model = Neutrino(eval_func=EvalAccuracy(),
+                               ...foo other arguments...)
 
 eval_split
 ^^^^^^^^^^
@@ -206,17 +219,35 @@ eval_split
     Name of the key in the `data_splits` dictionary on which to run the evaluation function and fetch
     the evaluation metric.
 
+.. code-block:: python
+
+    data_splits = {'train': foo_trainloader,
+                   'test': foo_testloader}
+    
+    eval_split = 'test' # matches with the dictionary key of data_splits for validation dataset
+    optimized_model = Neutrino(data=data_splits,
+                               ...foo other arguments...)
+
 .. _export:
 
 Export Formats
 ^^^^^^^^^^^^^^
 
-    By default, the optimized models will be exported in :ref:`neutrino_pickle`. Additionally, we support other export formats including `PyTorch TorchScript <https://pytorch.org/docs/stable/jit.html>`_, `ONNX <https://github.com/onnx/tutorials>`_, and `Tensorflow Lite (TFLite) <https://www.tensorflow.org/lite>`_. The optimized model can be exported to more than one format: ``['onnx', 'jit', 'tflite']``
+    A dictionary with the desired export format(s). By default, the optimized models will be exported in :ref:`neutrino_pickle`. Additionally, we support other export formats including `PyTorch TorchScript <https://pytorch.org/docs/stable/jit.html>`_, `ONNX <https://github.com/onnx/tutorials>`_, and `Tensorflow Lite (TFLite) <https://www.tensorflow.org/lite>`_. The optimized model can be exported to more than one format: ``['onnx', 'jit', 'tflite']``.
+    You can also specify a customized path/name of the exported model file.
 
     .. important::
 
         Currently, exporting to ``jit`` and ``onnx`` is supported by default in Neutrino. If you would like to use ``tflite`` export, additionally install ``pip install deeplite-model-converter[all]``
 
+.. code-block:: python
+
+        'export': {
+            'format': ['onnx'],
+            'kwargs': {
+                'root_path': <your_dir>
+            }
+        }
 
 .. _fp16:
 
@@ -237,6 +268,7 @@ Finally, you just need to call `run` function from ``Neutrino`` class to start t
 
 .. code-block:: python
 
+    from neutrino.framework.torch_framework import TorchFramework
     from neutrino.job import Neutrino
     config = {
         'deepsearch': args.deepsearch, #(boolean), (default = False)
@@ -248,6 +280,13 @@ Finally, you just need to call `run` function from ``Neutrino`` class to start t
         'level': args.level, # int {1, 2}, (default = 1)
         'export':{'format': ['onnx']}, # ['onnx', 'jit', 'tflite'] (default = None) 
     }
+
+    data_splits = {'train': trainloader,
+                   'test': testloader}
+
+    reference_model = TheModelClass(*args, **kwargs)
+    reference_model.load_state_dict(torch.load(PATH))
+
     opt_model = Neutrino(framework=TorchFramework(),
                          data=data_splits,
                          model=reference_model,
@@ -295,10 +334,18 @@ Neutrino saves, on the disk, both the provided reference model and the optimized
 
 .. code-block:: python
 
-    pytorch_reference_model = neutrino.load('/WORKING_DIR/ref_model.pkl')
-    pytorch_optimized_model = neutrino.load('/WORKING_DIR/opt_model.pkl')
+    from neutrino.framework.torch_framework import TorchFramework
+    from neutrino.job import Neutrino
 
-The ``neutrino.load`` function will load the model in pickle format and return a Pytorch native object. This model can be used for further processing using **Neutrino**, or for profiling using **Deeplite Profiler**, or for any downstream applications. 
+    # load original model
+    original_model = TheModelClass(*args, **kwargs)
+
+    # load Neutrino pickle format model
+    pytorch_optimized_model = Neutrino.load_from_pickle(TorchFramework(),
+                                                        '/WORKING_DIR/opt_model.pkl',
+                                                        original_model)
+
+The ``Neutrino.load_from_pickle`` function will load the model in pickle format and return a Pytorch native object. This model can be used for further processing using **Neutrino**, or for profiling using **Deeplite Profiler**, or for any downstream applications. 
 
 
 .. _type_tasks:

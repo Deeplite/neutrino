@@ -17,6 +17,10 @@ Through PyPi Repository
 Use ``pip`` to install Neutrino engine from our internal PyPi repository. We recommend creating a new python virtualenv,
 then pip install using the following commands, entering your credentials when prompted.
 
+.. important::
+    We currently only support pip installation for linux environment or Windows Subsystem for Linux (WSL).
+    Windows/mac installation is currently not supported.
+
 .. _pypi_install_engine:
 
 Install Neutrino Engine

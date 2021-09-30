@@ -125,6 +125,8 @@ implementations.
 
 .. code-block:: python
 
+    from deeplite.profiler.data_loader import ForwardPass
+
     class ClassificationTorchForwardPass(ForwardPass):
         def __init__(self):
             super().__init__(model_input_pattern=None, expecting_common_inputs=False)
@@ -191,6 +193,8 @@ The following example shows how to implement CrossEntropy loss function by this 
 
 .. code-block:: python
 
+    from neutrino.framework.functions import LossFunction
+
     class ClassificationLoss(LossFunction):
         def __call__(self, model, batch):
             x, y = batch
@@ -199,7 +203,7 @@ The following example shows how to implement CrossEntropy loss function by this 
             else:
                 x, y = x.cpu(), y.cpu()
             out = model(x)
-            return F.cross_entropy(out, y)
+            return {'loss': F.cross_entropy(out, y)}
 
 .. _eval_function:
 
@@ -222,21 +226,26 @@ interface
 
 .. code-block:: python
 
-    class EvaluationFunction(ABC):
+    class TorchEvaluationFunction(EvaluationFunction):
         @abstractmethod
-        def apply(self, model, loader, device=Device.CPU, **kwargs):
-            raise NotImplementedError
+        def _compute_inference(self, model, data_loader, device=Device.CPU, transform=None):
+            raise NotImplementedError("Base class call")
 
-The following example shows how to implement top1 accuracy eval function for classification task.
+The following example shows how to implement top1 accuracy eval function for classification task for PyTorch (TorchFramework).
 
 .. code-block:: python
 
-    class EvalAccuracy(EvaluationFuncton):
-        def apply(self, model, loader, device=Device.CPU):
+    from deeplite.torch_profiler.torch_inference import TorchEvaluationFunction
+
+    class EvalAccuracy(TorchEvaluationFunction):
+        def __init__(self, device='cuda'):
+            self.device = device
+
+        def _compute_inference(self, model, data_loader, **kwargs):
             total_acc = 0
             with torch.no_grad():
-                for x, y in loader:
-                    if self.device == Device.GPU:
+                for x, y in data_loader:
+                    if self.device == 'cuda':
                         x, y = x.cuda(), y.cuda()
                     else:
                         x, y = x.cpu(), y.cpu()
@@ -279,6 +288,9 @@ There are two ways to bring your optimizer into the engine:
         def make(self, native_model):
             """ Returns a native optimizer object """
 
+    # Example
+    from neutrino.framework.torch_nn import NativeOptimizerFactory
+
     class CustomOptimizerFactory(NativeOptimizerFactory):
         def make(self, native_model):
             from torch.optim import Adam
@@ -317,6 +329,9 @@ The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'eval
         def make(self, native_optimizer):
             """ Returns a native scheduler object """
 
+    # Example
+    from neutrino.framework.torch_nn import NativeSchedulerFactory
+
     class CustomSchedulerFactory(NativeSchedulerFactory):
         def make(self, native_optimizer):
             from torch.optim.lr_scheduler import MultiplicativeLR
@@ -336,7 +351,10 @@ that we do not show here all the possibilities in the ``ForwardPass`` object. We
 
 .. code-block:: python
 
-    from neutrino.framework.torch_data_loader import TorchForwardPass as FP
+    from deeplite.torch_profiler.torch_data_loader import TorchForwardPass as FP
+    from neutrino.framework.torch_framework import TorchFramework
+
+    framework = TorchFramework()
     forward_pass = FP(model_input_pattern=(0, '_', '_'))
     eval_func = MyEvalFunc()
 
@@ -355,8 +373,14 @@ that we do not show here all the possibilities in the ``ForwardPass`` object. We
             'eval_split': 'test',
         }
     }
-    neutrino = Neutrino(framework=framework, data=data_splits, model=reference_model, config=config, forward_pass=forward_pass,
-                        eval_func=eval_func, loss_function_cls=MyLoss, loss_function_kwargs=my_loss_config)
+    neutrino = Neutrino(framework=framework,
+                        data=data_splits,
+                        model=reference_model,
+                        config=config,
+                        forward_pass=forward_pass,
+                        eval_func=eval_func,
+                        loss_function_cls=MyLoss,
+                        loss_function_kwargs=my_loss_config)
     optimized_model = neutrino.run()
 
 
