@@ -165,8 +165,8 @@ optimization
 level
 ^^^^^
 
-    The engine has three levels of optimization for you to control how much computing resources you want to
-    allocate to the process. By default it is on level 1. Please note that level 3 may take roughly twice as long to
+    The engine has two levels of optimization for you to control how much computing resources you want to
+    allocate to the processs: Level 1 and Level 3. By default it is on level 1. Please note that level 3 may take roughly twice as long to
     complete than level 1, but level 3 will produce a more compressed result. Currently, the engine only supports level 1
     for object detection tasks. This option is not available for `optimization=latency`.
 
@@ -277,7 +277,7 @@ Finally, you just need to call `run` function from ``Neutrino`` class to start t
         'delta': args.delta, #(between 0 to 100), (default = 1)
         'device': args.device, # 'GPU' or 'CPU' (default = 'GPU')
         'use_horovod': args.horovod, #(boolean), (default = False)
-        'level': args.level, # int {1, 2}, (default = 1)
+        'level': args.level, # int {1, 3}, (default = 1)
         'export':{'format': ['onnx']}, # ['onnx', 'jit', 'tflite'] (default = None) 
     }
 

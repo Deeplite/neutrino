@@ -360,7 +360,7 @@ that we do not show here all the possibilities in the ``ForwardPass`` object. We
 
     config = {
         'deepsearch': args.deepsearch, #(boolean),
-        'level': args.level, # int {1, 2}
+        'level': args.level, # int {1, 3}
         'delta': args.delta, #(between 0 to 100),
         'device': args.device, # 'GPU' or 'CPU'
         'use_horovod': args.horovod, #(boolean),

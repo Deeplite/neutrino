@@ -533,7 +533,7 @@ To run the sample:
 
 .. code-block:: console
 
-    $ python hello_neutrino_classifier.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 2 --deepsearch --batch_size 256
+    $ python hello_neutrino_classifier.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 3 --deepsearch --batch_size 256
 
 The output:
 
@@ -546,7 +546,7 @@ The output:
     Files already downloaded and verified
     Files already downloaded and verified
     2020-12-09 15:35:14 - INFO: Starting job with ID: 67CA3456
-    2020-06-26 16:33:49 - INFO: Args: --dataset, cifar100, --workers, 1, -a, vgg19, --delta, 1, --level, 2, --deepsearch, --batch_size, 256
+    2020-06-26 16:33:49 - INFO: Args: --dataset, cifar100, --workers, 1, -a, vgg19, --delta, 1, --level, 3, --deepsearch, --batch_size, 256
     2020-06-26 16:33:49 - INFO:
     +------------------------------------------------------------------------------------+
     | Neutrino 1.0.0                                                 26/06/2020 16:33:49 |
@@ -722,7 +722,7 @@ Horovod (for more information please visit `Horovod in Docker <https://github.co
 
 .. code-block:: console
 
-    $ horovodrun -np 4 -H localhost:4 python hello_neutrino.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 2 --deepsearch --horovod --batch_size 256
+    $ horovodrun -np 4 -H localhost:4 python hello_neutrino.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 3 --deepsearch --horovod --batch_size 256
 
 .. _run_multi_multi_gpu:
 
@@ -735,7 +735,7 @@ Running on multi-gpu on multiple machines
 
 .. code-block:: console
 
-    $ horovodrun -np 8 -H hostname1:4,hostname2:4 python hello_neutrino.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 2 --deepsearch --horovod --batch_size 256
+    $ horovodrun -np 8 -H hostname1:4,hostname2:4 python hello_neutrino.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 3 --deepsearch --horovod --batch_size 256
 
 `Horovod on multiple machines <https://github.com/horovod/horovod/blob/master/docs/docker.rst#running-on-multiple-machines>`_
 
