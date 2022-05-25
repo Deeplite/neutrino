@@ -21,6 +21,7 @@ used for the provided pretrained model in order to make it all work.
     - :ref:`eval_function_interface`
 - :ref:`optimizer`
 - :ref:`scheduler`
+- :ref:`model averaging`
 - :ref:`deep_wrapup`
 
 .. _forward_pass:
@@ -341,6 +342,19 @@ The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'inte
             return MultiplicativeLR(native_optimizer, lr_lambda=lambda epoch: 0.95)
     scheduler = {'factory': CustomSchedulerFactory(),
                  'interval': 'epoch'}
+
+.. _model_averaging:
+
+Model Averaging
+===============
+
+A popular method for improving training of object detection models is exponential model averaging. We support this method within neutrino with a keyword argument to the ``full_trainer`` in the config:
+
+*  `'ema'` is a ``bool`` or ``dict`` which enables EMA model averaging during model training
+
+   1. ``bool``: Set to ``True`` to use default PyTorch EMA configuration
+   2. ``dict``: Use EMA with modified parameters `'decay_rate'` and/or `'period'`. 
+      i.e. ``{'decay_rate': 0.9999, 'period': 2000}``
 
 
 .. _deep_wrapup:
