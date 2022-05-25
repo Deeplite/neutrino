@@ -303,7 +303,7 @@ Customize Scheduler
 ===================
 
 It is also possible to provide a scheduler and is recommended to do so if it was used to train the original model.
-The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'eval_based'`.
+The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'interval'`.
 
 * `'factory'` is the factory pattern to bring in the scheduler which follows the same structure as the optimizer.
   There are two ways to bring your scheduler into the engine:
@@ -313,15 +313,18 @@ The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'eval
        pairs used to instantiate it.
     2. Implementing Neutrino's interface ``NativeSchedulerFactory``.
 
-* `'eval_based'` is a ``bool`` that informs Neutrino this scheduler listens to the evaluation metric (much like
-  early stopping does). It defaults to ``False``.
+* `'interval'` is a ``str`` that controls when the scheduler is stepped. The valid values are:
+
+    1. 'eval': Step scheduler after a call to the evaluation function. The Scheduler will receive the evaluation metric when stepped
+    2. 'epoch': Step scheduler after each training epoch
+    3. 'iteration': Step scheduler after each training batch.
 
 .. code-block:: python
 
     # If using the pytorch scheduler that reduces the learning rate by some factor at every patience count.
     # Note that this scheduler listens to the evaluation metric (ex.: accuracy) to guide its schedule.
     scheduler = {'factory': {'name': 'ReduceLROnPlateau', 'mode': 'max', 'patience': 10, 'factor': 0.2},
-                 'eval_based': True}
+                 'interval': 'eval'}
 
     # Now an implementation of the interface:
     class NativeSchedulerFactory(ABC):
@@ -337,7 +340,7 @@ The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'eval
             from torch.optim.lr_scheduler import MultiplicativeLR
             return MultiplicativeLR(native_optimizer, lr_lambda=lambda epoch: 0.95)
     scheduler = {'factory': CustomSchedulerFactory(),
-                 'eval_based': False}
+                 'interval': 'epoch'}
 
 
 .. _deep_wrapup:
@@ -366,7 +369,7 @@ that we do not show here all the possibilities in the ``ForwardPass`` object. We
         'use_horovod': args.horovod, #(boolean),
         'full_trainer': {
             'optimizer': {'name': 'SGD', lr: 0.1}, # optimizer in a dict format
-            'scheduler': {'factory': MySchedulerFactory(), 'eval_based': isEvalBased}, # scheduler in custom factory format
+            'scheduler': {'factory': MySchedulerFactory(), 'interval': 'epoch'}, # scheduler in custom factory format
             'epochs': 100, # int for nb of epochs required
             'eval_freq': 2, # useful if the evaluation takes a lot of time
             'eval_key': 'mykey', # str to take from the dict return by MyEvalFunc
