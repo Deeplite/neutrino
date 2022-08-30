@@ -21,7 +21,8 @@ used for the provided pretrained model in order to make it all work.
     - :ref:`eval_function_interface`
 - :ref:`optimizer`
 - :ref:`scheduler`
-- :ref:`model averaging`
+- :ref:`model_averaging`
+- :ref:`external_loop`
 - :ref:`deep_wrapup`
 
 .. _forward_pass:
@@ -279,7 +280,7 @@ There are two ways to bring your optimizer into the engine:
 
     # If you use SGD with 0.1 learning rate, we would need
     optimizer = {'name': 'SGD', 'lr': 0.1}
-    # this allow such a thing to happen:
+    # this allows such a thing to happen:
     #   from torch.optim import SGD
     #   opt = SGD(lr=0.1)
 
@@ -357,12 +358,68 @@ A popular method for improving training of object detection models is exponentia
       i.e. ``{'decay_rate': 0.9999, 'period': 2000}``
 
 
+.. _external_loop:
+
+Custom Training Loop
+====================
+
+    If your model requires complex training methods that are not configurable via our API, 
+    you may interface your own training loop code with our optimization engine.
+    Neutrino will take care of the model transformations and the :class:`ExternalTrainingLoop`
+    will control any model training.
+    
+Interface
+---------
+
+    The interface between Neutrino and your training code is implemented through the :class:`ExternalTrainingLoop`.
+    An instance of this class must be initialized in your script with two inputs: a callable ``train_function`` and an args dict/Namespace ``train_args``.
+    The loop is passed to Neutrino via the config dict and is used to train the model throughout the optimization process.
+    When it is time to train the model, the train_function will be called with both the model and the ``train_args`` passed as inputs. 
+
+    .. automodule:: neutrino.training.external
+        :members:
+
+
+See below for an example of the interface 
+
+.. code-block:: python
+
+    from neutrino.training import ExternalTrainingLoop
+    class MyTrainingLoop(ExternalTrainingLoop):
+        def modify_args_for_finetuning(self, args):
+            # example: update scheduler arg for finetuning
+            return self._modify_args(args, 'scheduler', 'finetune_scheduler')
+
+        def modify_args_for_validation(self, args, validation):
+            # example: translate to 'validate' arg name
+            return self._modify_args(args, 'validate', validation)
+
+        def modify_args_for_epochs(self, args, epochs):
+            # example: translate to 'train_epochs' arg name
+            return self._modify_args(args, 'train_epochs', epochs)
+
+    my_train_args = my_argparser.parse_args()
+
+    my_loop = MyTrainingLoop(my_train_function, my_train_args)
+
+    config = {
+        'optimization': 'quantization',
+        'task_type': 'classification',
+        'external_training_loop': my_loop
+    }
+
+    opt_model = Neutrino.Job(
+        config=config,
+        ...,
+        ).run()
+
+
 .. _deep_wrapup:
 
 Wrapping it up together
 =======================
 
-Here is an example of how the call to the engine would be made with all those specifications. Please notice
+Here is an example of how the call to the engine would be made with some of those specifications. Please notice
 that we do not show here all the possibilities in the ``ForwardPass`` object. We only use the
 ``model_input_pattern`` (and by default ``expecting_common_inputs`` is True).
 
