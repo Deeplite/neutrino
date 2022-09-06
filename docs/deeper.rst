@@ -21,6 +21,8 @@ used for the provided pretrained model in order to make it all work.
     - :ref:`eval_function_interface`
 - :ref:`optimizer`
 - :ref:`scheduler`
+- :ref:`model_averaging`
+- :ref:`external_loop`
 - :ref:`deep_wrapup`
 
 .. _forward_pass:
@@ -278,7 +280,7 @@ There are two ways to bring your optimizer into the engine:
 
     # If you use SGD with 0.1 learning rate, we would need
     optimizer = {'name': 'SGD', 'lr': 0.1}
-    # this allow such a thing to happen:
+    # this allows such a thing to happen:
     #   from torch.optim import SGD
     #   opt = SGD(lr=0.1)
 
@@ -303,7 +305,7 @@ Customize Scheduler
 ===================
 
 It is also possible to provide a scheduler and is recommended to do so if it was used to train the original model.
-The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'eval_based'`.
+The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'interval'`.
 
 * `'factory'` is the factory pattern to bring in the scheduler which follows the same structure as the optimizer.
   There are two ways to bring your scheduler into the engine:
@@ -313,15 +315,18 @@ The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'eval
        pairs used to instantiate it.
     2. Implementing Neutrino's interface ``NativeSchedulerFactory``.
 
-* `'eval_based'` is a ``bool`` that informs Neutrino this scheduler listens to the evaluation metric (much like
-  early stopping does). It defaults to ``False``.
+* `'interval'` is a ``str`` that controls when the scheduler is stepped. The valid values are:
+
+    1. 'eval': Step scheduler after a call to the evaluation function. The Scheduler will receive the evaluation metric when stepped
+    2. 'epoch': Step scheduler after each training epoch
+    3. 'iteration': Step scheduler after each training batch.
 
 .. code-block:: python
 
     # If using the pytorch scheduler that reduces the learning rate by some factor at every patience count.
     # Note that this scheduler listens to the evaluation metric (ex.: accuracy) to guide its schedule.
     scheduler = {'factory': {'name': 'ReduceLROnPlateau', 'mode': 'max', 'patience': 10, 'factor': 0.2},
-                 'eval_based': True}
+                 'interval': 'eval'}
 
     # Now an implementation of the interface:
     class NativeSchedulerFactory(ABC):
@@ -337,7 +342,140 @@ The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'eval
             from torch.optim.lr_scheduler import MultiplicativeLR
             return MultiplicativeLR(native_optimizer, lr_lambda=lambda epoch: 0.95)
     scheduler = {'factory': CustomSchedulerFactory(),
-                 'eval_based': False}
+                 'interval': 'epoch'}
+
+.. _model_averaging:
+
+Model Averaging
+===============
+
+A popular method for improving training of object detection models is exponential model averaging. We support this method within neutrino with a keyword argument to the ``full_trainer`` in the config:
+
+*  `'ema'` is a ``bool`` or ``dict`` which enables EMA model averaging during model training
+
+   1. ``bool``: Set to ``True`` to use default PyTorch EMA configuration
+   2. ``dict``: Use EMA with modified parameters `'decay_rate'` and/or `'period'`. 
+      i.e. ``{'decay_rate': 0.9999, 'period': 2000}``
+
+
+.. _external_loop:
+
+Custom Training Loop
+====================
+
+    If your model requires complex training methods that are not configurable via our API, 
+    you may interface your own training loop code with our optimization engine.
+    Neutrino will take care of the model transformations and the :class:`ExternalTrainingLoop`
+    will control any model training.
+    
+Interface
+---------
+
+    The interface between Neutrino and your training code is implemented through the :class:`ExternalTrainingLoop`.
+    An instance of this class must be initialized in your script with two inputs: a callable ``train_function`` and an args dict/Namespace ``train_args``.
+    The loop is passed to Neutrino via the config dict and is used to train the model throughout the optimization process.
+    When it is time to train the model, the train_function will be called with both the model and the ``train_args`` passed as inputs. 
+
+.. py:class::  ExternalTrainingLoop
+
+    Training loop interface. It accepts a callable ``train_function`` with signature:
+    ``trained_model = train_function(model, train_args)``.
+
+    The ``train_args`` are given at construction of the object and mostly remain static throughout its lifetime.
+    Care should then be given to setup any globals the training function needs in order to run training multiple
+    times.
+
+    There are two mandatory modifications that Neutrino needs to be able to do on the way the ``train_function`` is
+    ran and it has to go through the args:
+
+        - ``modify_args_for_validation(args, validation)`` -> activate or deactivate eval according to bool `validation`
+        - ``modify_args_for_epochs(args, epochs)`` -> change the number of epochs according to the int `epochs`
+
+    And one optional:
+        - ``modify_args_for_finetuning(args)`` -> change the args so the loop is in *finetuning* mode
+
+.. py:method:: copy_args(self)
+        
+    Copy args. Provides a default implementation through deepcopy if the args are of type ``argparse.Namespace`` or
+    a simple python dict. It is essential the args can be copied because they could be modified inside the
+    train callable and pollute further repeated calls.
+
+.. py:staticmethod:: _modify_args(args, key, value)
+
+    Updates args with key, value pair
+
+.. py:method:: modify_args_for_finetuning(self, args)
+
+    Modify args for a loop in finetuning mode. By default it is not implemented and the loop is considered
+    not finetuning enabled.
+
+    .. note::
+        If finetuning is enabled and requested, this modification to args takes precedence over
+        :meth:`modify_args_for_epochs`.
+
+
+.. py:method:: modify_args_for_validation(self, args, validation)
+
+        Activate or deactivate validation according to ``validation``.
+
+        Default implementation assumes key 'validation' in args is the control for activating validation.
+
+        return self._modify_args(args, 'validation', validation)
+
+.. py:method:: modify_args_for_epochs(self, args, epochs)
+
+        Modify the number of epochs the train function will run according to ``epochs``.
+
+        Default implementation assumes key 'epochs' in args is the control for changing epochs numbers
+
+.. py:method:: train(self, model, epochs=None, validation=True, finetuning=False)
+
+        Train the model through :attr:`train_function` with :attr:`train_args`. The flow is:
+            #. copy args
+
+                * if ``finetuning``, modify for args for it
+
+                * elif ``epochs`` is given modify for new number of epochs
+
+                * else the training function should take its default value
+
+            #. modify args for ``validation``
+
+            #. call ``train_function(model, args)``
+
+
+See below for an example of the interface 
+
+.. code-block:: python
+
+    from neutrino.training import ExternalTrainingLoop
+    class MyTrainingLoop(ExternalTrainingLoop):
+        def modify_args_for_finetuning(self, args):
+            # example: update scheduler arg for finetuning
+            return self._modify_args(args, 'scheduler', 'finetune_scheduler')
+
+        def modify_args_for_validation(self, args, validation):
+            # example: translate to 'validate' arg name
+            return self._modify_args(args, 'validate', validation)
+
+        def modify_args_for_epochs(self, args, epochs):
+            # example: translate to 'train_epochs' arg name
+            return self._modify_args(args, 'train_epochs', epochs)
+
+    my_train_args = my_argparser.parse_args()
+
+    my_loop = MyTrainingLoop(my_train_function, my_train_args)
+
+    config = {
+        'optimization': 'quantization',
+        'task_type': 'classification',
+        'external_training_loop': my_loop
+    }
+
+    opt_model = Neutrino.Job(
+        config=config,
+        ...,
+        ).run()
 
 
 .. _deep_wrapup:
@@ -345,7 +483,7 @@ The scheduler **has** to be given as a ``dict`` with keys `'factory'` and `'eval
 Wrapping it up together
 =======================
 
-Here is an example of how the call to the engine would be made with all those specifications. Please notice
+Here is an example of how the call to the engine would be made with some of those specifications. Please notice
 that we do not show here all the possibilities in the ``ForwardPass`` object. We only use the
 ``model_input_pattern`` (and by default ``expecting_common_inputs`` is True).
 
@@ -366,7 +504,7 @@ that we do not show here all the possibilities in the ``ForwardPass`` object. We
         'use_horovod': args.horovod, #(boolean),
         'full_trainer': {
             'optimizer': {'name': 'SGD', lr: 0.1}, # optimizer in a dict format
-            'scheduler': {'factory': MySchedulerFactory(), 'eval_based': isEvalBased}, # scheduler in custom factory format
+            'scheduler': {'factory': MySchedulerFactory(), 'interval': 'epoch'}, # scheduler in custom factory format
             'epochs': 100, # int for nb of epochs required
             'eval_freq': 2, # useful if the evaluation takes a lot of time
             'eval_key': 'mykey', # str to take from the dict return by MyEvalFunc

@@ -22,6 +22,9 @@ Follow these simple steps to learn how to use Neutrino in your project.
 - :ref:`choose_model`
 - :ref:`run_engine`
     - :ref:`run_config`
+    - :ref:`compression_config`
+    - :ref:`latency_config`
+    - :ref:`quant_config`
     - :ref:`export`
     - :ref:`run_output`
 - :ref:`neutrino_pickle`
@@ -132,63 +135,48 @@ Example:
 Run Optimization Engine
 =======================
 
-We provide a simple yet powerful process with multiple user-guided controls to optimize your models. First, you need to instantiate from ``Neutrino`` class and pass the required arguments ``data_splits``, ``reference_model`` and ``framework``.
-Furthermore, a ``config`` dictionary with at least a **delta** key needs to be supplied. This value is crucial as it defines
-the tolerable performance drop you wish to trade-off (accuracy versus model size, latency etc.).
-Finally, a choice for the ``optimization`` key needs to be taken into consideration as it fundamentally alters how the
-engine will optimize your model.
+We provide a simple yet powerful process with multiple user-guided controls to optimize your models. 
+First, you need to instantiate from ``Neutrino`` class and pass the required arguments ``data_splits``, ``reference_model`` and ``framework``.
+Furthermore, a ``config`` dictionary needs to be supplied with the ``optimization`` parameter and any 
+other parameters which configure the optimization and training process.
+
+There are three optimization modes provided by neutrino: ``compression``, ``latency``, and ``quantization``. Each makes use of common Neutrino ``config`` parameters 
+and other mode-specific parameters. If you are just getting started, the ``compression`` mode is our recommended first step.
 
 .. _run_config:
 
-Config
-------
+Neutrino Configuration
+----------------------
 
-    You can pass several parameters to the Neutrino engine through the config. Config is a dictionary with the following keys:
-
-delta
-^^^^^
-
-    The acceptable performance drop for your model. Delta must be in the same range as your performance metric. For example,
-    you must use a delta between 0 and 1.0 if your performance metric is between 0 and 1.0 (e.g. your model has 0.758 mAP) or
-    you must use a delta between 0 and 100 if your performance metric is between 0 and 100 (e.g. 78% Top1 accuracy).
+    You can pass several parameters to the Neutrino engine through the config. Every Neutrino job makes use of a config dictionary with parameters described below.
 
 optimization
 ^^^^^^^^^^^^
 
-    Select which mode you want to use the engine based on your key optimization criteria. The engine currently supports
-    ``compression`` or ``latency`` mode: compression maximizes reduction of the bytes the model will occupy in terms of disk size.
-    latency maximizes reduction of the model execution time. Keep in mind compression mode may also improve latency and vice versa.
+    Select which optimization mode the engine should use. The engine currently supports:
+
+    ``compression``: maximizes reduction of the bytes the model will occupy in terms of disk size
+    
+    ``latency``: maximizes reduction of the model execution time
+    
+    ``quantization``: compresses the model with quantization and reduces execution time when deployed with Deeplite RT
+    
+    Keep in mind compression mode may also improve latency and latency mode may reduce model size.
 
     .. note::
-        The default behavior is **compression**.
-
-level
-^^^^^
-
-    The engine has two levels of optimization for you to control how much computing resources you want to
-    allocate to the processs: Level 1 and Level 3. By default it is on level 1. Please note that level 3 may take roughly twice as long to
-    complete than level 1, but level 3 will produce a more compressed result. Currently, the engine only supports level 1
-    for object detection tasks. This option is not available for `optimization=latency`.
-
-deepsearch
-^^^^^^^^^^
-
-    In conjunction with `levels`, it is possible to use the `deepsearch` flag. This is a powerful function that will produce even more optimized results. It activates a more fine
-    grained optimization search to consume the most of the allotted `delta`, however it will make the optimization process longer . This option is not
-    available for `optimization=latency`.
+        The default behavior is **compression**. Currently, the **quantization** mode is available only for the Production version of Deeplite Neutrino. Refer, :ref:`how to upgrade <feature_comparison>`.
 
 device
 ^^^^^^
 
-    Whether to use **GPU** or **CPU** for the optimization process. This is typically the same machine you would use to train your model. For modern deep learning and computer vision models/datasets, we recommend to use GPU. Keep in mind that 'device' does NOT dictate the device you deploy your model on for inference. Once you start a job, it is not possible to switch from CPU to GPU after initializing
+    Whether to use **GPU** or **CPU** for the optimization process. This is typically the same machine you would use to train your model. For modern deep learning and computer vision models/datasets, we recommend to use GPU. 
+    Keep in mind that 'device' does NOT dictate the device you deploy your model on for inference. Once you start a job, it is not possible to switch from CPU to GPU after initializing
     the engine on CPU.
-
 
 horovod
 ^^^^^^^
 
-    An experimental feature that activates distributed training through Horovod. Please read :ref:`run_multi_gpu`
-    for more information.
+    Activates distributed training through Horovod. Please read :ref:`run_multi_gpu` for more information.
 
     .. important::
 
@@ -197,7 +185,7 @@ horovod
 eval_key
 ^^^^^^^^
 
-    Name of the evaluation metric the engine listens to while optimizing for `delta`. More details
+    Name of the evaluation metric the engine listens to while optimizing for `delta` (e.g. 'accuracy', 'mAP'). More details
     are here :ref:`type_tasks` and when creating customized evaluation function :ref:`deeper`.
 
 .. code-block:: python
@@ -228,94 +216,169 @@ eval_split
     optimized_model = Neutrino(data=data_splits,
                                ...foo other arguments...)
 
+.. _compression_config:
+
+Compression Configuration
+-------------------------
+    The ``compression`` optimization mode makes use of the following config parameters:
+
+.. _delta_param:
+
+delta
+^^^^^
+
+    The acceptable performance drop for your model. Delta must be in the same range as your performance metric. For example,
+    you must use a delta between 0 and 1.0 if your performance metric is between 0 and 1.0 (e.g. your model has 0.758 mAP) or
+    you must use a delta between 0 and 100 if your performance metric is between 0 and 100 (e.g. 78% Top1 accuracy).
+
+level
+^^^^^
+    The engine has two levels of optimization for you to control how much computing resources you want to
+    allocate to the processs: Level 1 and Level 3. By default it is on level 1. Please note that level 3 may take roughly twice as long to
+    complete than level 1, but level 3 will produce a more compressed result. Currently, the engine only supports level 1
+    for object detection tasks.
+
+deepsearch
+^^^^^^^^^^
+    In conjunction with `levels`, it is possible to use the `deepsearch` flag. This is a powerful function that will produce even more optimized results. It activates a more fine
+    grained optimization search to consume the most of the allotted `delta`, however it will make the optimization process longer .
+
+.. _latency_config:
+
+Latency Configuration
+---------------------
+    The ``latency`` optimization mode makes use of the :ref:`delta_param` parameter in the same way as the ``compression`` mode.
+
+.. _quant_config:
+
+Quantization Configuration
+--------------------------
+    The quantization optimization mode is activated by adding key ``'custom_compression'`` to the config dictionary with a dictionary
+    defining the quantization parameters. There are two methods for configuring quantization: rules-based quantization with ``quantization_args``
+    or a layerwise configuration with ``layers`` 
+
+quantization_args
+^^^^^^^^^^^^^^^^^
+    Passing a dictionary under the key ``'quant_args'`` activates rules-based model quantization. The parameters manually control
+    which layers of the network are quantized to ultra low precision.
+
+    ``'quantize_conv11'``: bool, default=False. Activates quantization of pointwise convolution layers
+
+    ``'skip_layers'``: list[int], default=None. Skips quantization of layers with given indices. Layers indexed by traversal of computational graph of the model
+
+    ``'skip_layers_ratio'``: float in range [0.0, 1.0], default=0.0. Skips first ``skip_layers_ratio * n_layers`` layers
+
+.. code-block:: python
+
+    config = {
+        'custom_compression': {
+            'quantization_args': {
+                'quantize_conv11': True,
+                'skip_layers': [8, 9, 10],
+                'skip_layers_ratio': 0.1
+            }
+    }
+
+layers
+^^^^^^
+    Passing a dictionary under the key ``'layers'`` enables a layerwise quantization configuration.
+    Any layer not specified in the dictionary will remain at FP32 precision.
+    The layer names are defined by the underlying framework. For torch this correlates to the names returned by ``model.named_modules()``.
+
+    This custom_compression dictionary is formatted as follows:
+
+.. code-block:: python
+    
+    config = {
+        'custom_compression': {
+            'layers': {
+                'model.block.0.conv1': {
+                    'precision': 2
+                },
+                'model.block.1.conv2': {
+                    'precision': 2
+                }...
+        }
+    }
+
 .. _export:
 
-Export Formats
-^^^^^^^^^^^^^^
+Export
+------
 
-    A dictionary with the desired export format(s). By default, the optimized models will be exported in :ref:`neutrino_pickle`. Additionally, we support other export formats including `PyTorch TorchScript <https://pytorch.org/docs/stable/jit.html>`_, `ONNX <https://github.com/onnx/tutorials>`_, and `Tensorflow Lite (TFLite) <https://www.tensorflow.org/lite>`_. The optimized model can be exported to more than one format: ``['onnx', 'jit', 'tflite']``.
-    You can also specify a customized path/name of the exported model file.
+    A dictionary with the desired export format(s). By default, the optimized models will be exported in :ref:`neutrino_pickle`. Additionally, we support other export formats including
+    `PyTorch TorchScript <https://pytorch.org/docs/stable/jit.html>`_, `ONNX <https://github.com/onnx/tutorials>`_, `Tensorflow Lite (TFLite) <https://www.tensorflow.org/lite>`_, and `dlrt`
+    The optimized model can be exported to more than one format: ``['onnx', 'jit', 'tflite', 'dlrt']``. Quantized models are only exported to our proprietary `dlrt` format.
+    You can also specify a customized path of the exported model file.
 
     .. important::
 
-        Currently, exporting to ``jit`` and ``onnx`` is supported by default in Neutrino. If you would like to use ``tflite`` export, additionally install ``pip install deeplite-model-converter[all]``
+        Currently, exporting to ``jit``, ``onnx``, and ``dlrt`` is supported by default in Neutrino. If you would like to use ``tflite`` export, additionally install ``pip install deeplite-model-converter[all]``
+
+.. _export_example:
 
 .. code-block:: python
 
         'export': {
             'format': ['onnx'],
             'kwargs': {
-                'root_path': <your_dir>
+                'root_path': <your_dir>,
+                'precision': 'fp32' # ('fp32' or 'fp16'), only for onnx, dlrt formats
+                'resolutions': [(32, 32), (36, 36)] # list of tuples, only for onnx, dlrt formats
             }
         }
 
-.. _fp16:
-
-onnx_precision
-^^^^^^^^^^^^^^
-
-    Set it to `'fp16'` if you want the engine to export the optimized model in FP16. Please note that some
-    operations need FP32 and onnx cannot convert them to FP16. Currently, this option is only available for
-    classification tasks.
 
 BatchNorm Fusing
 ^^^^^^^^^^^^^^^^
 
-    The engine fuses BachNorm layers if **bn_fusion=True**. Click `here <https://tehnokv.com/posts/fusing-batchnorm-and-conv/>`_
+    The engine fuses BachNorm layers before export if **bn_fusion=True**. Click `here <https://tehnokv.com/posts/fusing-batchnorm-and-conv/>`_
     for more information about Fusing batch normalization and convolution in runtime.
 
-Finally, you just need to call `run` function from ``Neutrino`` class to start the optimization process.
+ONNX/DLRT Export Options
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: python
+.. _resolution:
 
-    from neutrino.framework.torch_framework import TorchFramework
-    from neutrino.job import Neutrino
-    config = {
-        'deepsearch': args.deepsearch, #(boolean), (default = False)
-        'onnx_precision': precision, #('fp16' or 'fp32') (default = 'fp32')
-        'bn_fusion':args.bn_fuse #(boolean)
-        'delta': args.delta, #(between 0 to 100), (default = 1)
-        'device': args.device, # 'GPU' or 'CPU' (default = 'GPU')
-        'use_horovod': args.horovod, #(boolean), (default = False)
-        'level': args.level, # int {1, 3}, (default = 1)
-        'export':{'format': ['onnx']}, # ['onnx', 'jit', 'tflite'] (default = None) 
-    }
+resolutions
++++++++++++
 
-    data_splits = {'train': trainloader,
-                   'test': testloader}
+    By default, the onnx model is exported with both dynamic input image resolution, and fixed input resolution matching the training dataset resolution.
+    If you wish to deploy the model with a different input resolution, you can specify the desired resolution(s) as shown in the export :ref:`example<export_example>`.
 
-    reference_model = TheModelClass(*args, **kwargs)
-    reference_model.load_state_dict(torch.load(PATH))
+.. _precision:
 
-    opt_model = Neutrino(framework=TorchFramework(),
-                         data=data_splits,
-                         model=reference_model,
-                         config=config).run(dryrun=args.dryrun) #dryrun is boolean and it is False by default
+precision
++++++++++
 
-.. note::
-
-    It is recommended to run the engine in ``dryrun mode`` to check everything runs properly on your machines.
-    It forces the engine to run till the end without running any heavy and time consuming computation.
+    Set the `'precision'` keyword argument to `'fp16'` if you want the engine to export the optimized model in FP16. Please note that some
+    operations need FP32 and onnx cannot convert them to FP16. Currently, this option is only available for
+    classification tasks and the onnx export format.
 
 .. _run_output:
 
 Output
-------
+^^^^^^
 
-You can get the PyTorch object of the optimized model from ``Neutrino.run()`` function call. The following output is obtained when the export format is provided as ``['onnx', 'jit']``. The engine also exports
-the reference model in FP32 and the optimized model in FP32 or FP16 (See :ref:`fp16`) in **onnx format**
-with dynamic input size, **pytorch script** format, and a proprietary **Neutrino pickle** format, as follows:
+The python object of the optimized model is returned by the ``Neutrino.run()`` function call. 
+The following output is obtained when the export format is provided as ``['onnx', 'jit']``. The engine exports
+the reference model in FP32 and the optimized model in FP32 or FP16 (See :ref:`precision<precision>`) in **onnx format**
+with both dynamic input resolution and fixed input input resolution.
+The dynamic input model is also exported to **pytorch script** format and a proprietary **Neutrino pickle** format, as follows:
 
 .. code-block:: console
 
     Reference Model has been exported to Neutrino pickle format: /WORKING_DIR/ref_model.pkl
     Reference Model has been exported to pytorch jit format: /WORKING_DIR/ref_model_jit.pt
-    Reference Model has been exported to onnx format: /WORKING_DIR/ref_model.onnx
+    Reference Model has been exported to onnx format: /WORKING_DIR/ref_modelfp32_dynamic_shape.onnx
+    Reference Model, fixed input resolution, exported to onnx format: /WORKING_DIR/ref_modelfp32_dynamic_shape.onnx
     Optimized Model has been exported to Neutrino pickle format: /WORKING_DIR/opt_model.pkl
     Optimized Model has been exported to pytorch jit format: /WORKING_DIR/opt_model_jit.pt
-    Optimized Model has been exported to onnx format: /WORKING_DIR/opt_model.onnx
+    Optimized Model has been exported to onnx format: /WORKING_DIR/opt_modelfp32_dynamic_shape.onnx
+    Optimized Model, fixed input resolution, exported to onnx format: /WORKING_DIR/opt_model32x32fp32.onnx
     OR
-    Model has been exported to onnx format: /WORKING_DIR/opt_model_fp16.onnx (if fp16 is enabled)
+    Optimized Model has been exported to onnx format: /WORKING_DIR/opt_modelfp16_dynamic_shape.onnx (if fp16 is enabled)
+    Optimized Model, fixed input resolution, exported to onnx format: /WORKING_DIR/opt_model32x32fp16.onnx (if fp16 is enabled)
 
 .. important::
 
@@ -328,7 +391,7 @@ with dynamic input size, **pytorch script** format, and a proprietary **Neutrino
 .. _neutrino_pickle:
 
 Neutrino Pickle Format
-======================
+^^^^^^^^^^^^^^^^^^^^^^
 
 Neutrino saves, on the disk, both the provided reference model and the optimized model in an encrypted proprietary pickle format. This will be available in the following paths: ``/WORKING_DIR/ref_model.pkl`` and ``/WORKING_DIR/opt_model.pkl``. One can load the **Neutrino pickle** format using our custom load function, as follows,
 
@@ -346,6 +409,44 @@ Neutrino saves, on the disk, both the provided reference model and the optimized
                                                         original_model)
 
 The ``Neutrino.load_from_pickle`` function will load the model in pickle format and return a Pytorch native object. This model can be used for further processing using **Neutrino**, or for profiling using **Deeplite Profiler**, or for any downstream applications. 
+
+
+Running a Job
+-------------
+
+Finally, you just need to call `run` function from ``Neutrino`` class to start the optimization process.
+
+.. code-block:: python
+
+    from neutrino.framework.torch_framework import TorchFramework
+    from neutrino.job import Neutrino
+    config = {
+        'deepsearch': args.deepsearch, #(boolean), (default = False)
+        'bn_fusion':args.bn_fuse #(boolean)
+        'delta': args.delta, #(between 0 to 100), (default = 1)
+        'device': args.device, # 'GPU' or 'CPU' (default = 'GPU')
+        'use_horovod': args.horovod, #(boolean), (default = False)
+        'level': args.level, # int {1, 3}, (default = 1)
+        'export':{'format': ['onnx'], # ['onnx', 'jit', 'tflite'] (default = None) 
+                  'kwargs': {'precision': precision}, # ('fp16' or 'fp32') (default = 'fp32')
+                 }
+    }
+
+    data_splits = {'train': trainloader,
+                   'test': testloader}
+
+    reference_model = TheModelClass(*args, **kwargs)
+    reference_model.load_state_dict(torch.load(PATH))
+
+    opt_model = Neutrino(framework=TorchFramework(),
+                         data=data_splits,
+                         model=reference_model,
+                         config=config).run(dryrun=args.dryrun) #dryrun is boolean and it is False by default
+
+.. note::
+
+    It is recommended to run the engine in ``dryrun mode`` to check everything runs properly on your machines.
+    It forces the engine to run till the end without running any heavy and time consuming computation.
 
 
 .. _type_tasks:
