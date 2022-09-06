@@ -12,7 +12,6 @@ before_install:
 install:
   - pip install sphinx
   - pip install sphinx_rtd_theme
-  - pip install neutrino-engine
   
 # command to run tests
 script:
