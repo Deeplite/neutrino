@@ -173,14 +173,16 @@ device
     Keep in mind that 'device' does NOT dictate the device you deploy your model on for inference. Once you start a job, it is not possible to switch from CPU to GPU after initializing
     the engine on CPU.
 
-horovod
+use_horovod
 ^^^^^^^
 
     Activates distributed training through Horovod. Please read :ref:`run_multi_gpu` for more information.
+    Neutrino will linearly scale the learning rate by the number of GPUs  
 
     .. important::
 
         Currently, the multi-GPU support is available only for the Production version of Deeplite Neutrino. Refer, :ref:`how to upgrade <feature_comparison>`.
+    .. 
 
 eval_key
 ^^^^^^^^
