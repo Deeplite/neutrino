@@ -64,7 +64,7 @@ To install `torch` backend:
 
 **Minimal Dependencies:**
 
-- neutrino-engine>=4.4.0
+- neutrino-engine>=5.3.2
 - torch==1.4.0
 - ptflops==0.6.2
 - Augmentor==0.2.8"
