@@ -4,7 +4,7 @@
 deeplite-torch-zoo
 ******************
 
-The ``deeplite-torch-zoo`` package is a collection of popular CNN model architectures and benchmark datasets for PyTorch framework. The models are grouped under different datasets and different task types such as classification, object detection, and segmentation. The primary aim of this ``deeplite-torch-zoo`` is to booststrap applications by starting with the most suitable pretrained models. In addition, the pretrained models from ``deeplite-torch-zoo`` can be used as a good starting point for optimizing model architectures using our :ref:`neutrino_engine`.  
+The ``deeplite-torch-zoo`` package is a collection of popular CNN model architectures and benchmark datasets for PyTorch framework. The models are grouped under different datasets and different task types such as classification, object detection, and segmentation. The primary aim of this ``deeplite-torch-zoo`` is to booststrap applications by starting with the most suitable pretrained models. In addition, the pretrained models from ``deeplite-torch-zoo`` can be used as a good starting point for optimizing model architectures using our :ref:`neutrino_engine`.
 
 * :ref:`zoo_install`
     * :ref:`zoo_install_pip`
@@ -41,7 +41,7 @@ Installation
 1. Install using pip
 --------------------
 
-Use following command to install the package from our internal PyPI repository. 
+Use following command to install the package from our internal PyPI repository.
 
 .. code-block:: console
 
@@ -73,39 +73,45 @@ To test the installation, one can run the basic tests using `pytest` command in 
 
 **Minimal Dependencies**
 
-- numpy==1.18.5
-- torch==1.4.0
-- torchvision==0.5.0
+- torch>=1.4,<=1.8.1
 - opencv-python
 - scipy>=1.4.1
-- pycocotools
-- Cython==0.28.4
-- scikit-image==0.15.0
+- numpy==1.19.5
+- pycocotools==2.0.4
+- Cython==0.29.30
 - tqdm==4.46.0
-- albumentations==0.1.8
+- albumentations
 - pretrainedmodels==0.7.4
-- torchfcn
-- tensorboardX
-- mmcv==1.2.0
-- xtcocotools>=1.6
-- json-tricks>=3.15.4
-- poseval@git+https://github.com/svenkreiss/poseval.git#egg=poseval-0.1.0
-- black
-- isort
+- torchfcn==1.9.7
+- tensorboardX==2.4.1
+- pyvww==0.1.1
+- timm==0.5.4
+- texttable==1.6.4
+- pytz
+- torchmetrics==0.8.0
+- mean_average_precision==2021.4.26.0
+- ptflops==0.6.2
 
 .. _zoo_usage:
 
 How to Use
 ==========
 
-The ``deeplite-torch-zoo`` is collection of benchmark computer vision datasets and pretrained models. There are two primary wrapper functions to load datasets and models, ``get_data_splits_by_name``, ``get_model_by_name`` (available in ``deeplite_torch_zoo.wrappers.wrapper``)
+The ``deeplite-torch-zoo`` is collection of benchmark computer vision datasets and pretrained models. The main API functions provided in the zoo are
+
+.. code-block:: python
+
+    from deeplite_torch_zoo import get_data_splits_by_name  # create dataloaders
+    from deeplite_torch_zoo import get_model_by_name  # get a pretrained model for a task
+    from deeplite_torch_zoo import get_eval_function  # get an evaluation function for a given model and dataset
+    from deeplite_torch_zoo import create_model  # create a model with an arbitrary number of classes
 
 .. _zoo_usage_load_dataset:
 
 Loading Datasets
 ----------------
 
-The loaded datasets are available as a dictionary of the following format: ``{'train': train_dataloder, 'test': test_dataloader}``. The `train_dataloder` and `test_dataloader` are objects of ``torch.utils.data.DataLoader``.
+The loaded datasets are available as a dictionary of the following format: ``{'train': train_dataloder, 'test': test_dataloader}``. The `train_dataloder` and `test_dataloader` are objects of type ``torch.utils.data.DataLoader``.
 
 .. _zoo_usage_load_dataset_classification:
 
@@ -113,10 +119,13 @@ Classification Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
-    
-    # Example: DATASET_NAME = "cifar100", BATCH_SIZE = 128
+
+    # Example: DATASET_NAME = "cifar100", BATCH_SIZE = 128, MODEL_NAME = "resnet18"
     data_splits = get_data_splits_by_name(
-        dataset_name=DATASET_NAME, batch_size=BATCH_SIZE
+        data_root="./",
+        dataset_name=DATASET_NAME,
+        model_name=MODEL_NAME,
+        batch_size=BATCH_SIZE
     )
 
 .. _zoo_usage_load_dataset_od:
@@ -124,64 +133,105 @@ Classification Datasets
 Object Detection Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following sample code loads `PASCAL VOC <http://host.robots.ox.ac.uk/pascal/VOC/>`_ dataset. ``train`` contains data loader for train sets for `VOC2007` and/or `VOC2012`. If both datasets are provided it concatenates both `VOC2007` and `VOC2012` train sets. Otherwise, it returns the train set for the provided dataset. 'test' contains dataloader (always with ``batch_size=1``) for test set based on `VOC2007`. You also need to provide the model type as well.
+The following sample code loads `PASCAL VOC <http://host.robots.ox.ac.uk/pascal/VOC/>`_ dataset. ``train`` contains data loader for train sets for `VOC2007` and/or `VOC2012`. If both datasets are provided it concatenates both `VOC2007` and `VOC2012` train sets. Otherwise, it returns the train set for the provided dataset. 'test' contains dataloader (always with ``batch_size=1``) for test set based on `VOC2007`. You also need to provide the model name to instantiate the dataloaders.
 
 .. code-block:: python
 
+    # Example: DATASET_NAME = "voc", BATCH_SIZE = 32, MODEL_NAME = "yolo4s"
     data_splits = get_data_splits_by_name(
         data_root=PATH_TO_VOCdevkit,
-        dataset_name="voc",
-        model_name="vgg16_ssd",
+        dataset_name=DATASET_NAME,
+        model_name=MODEL_NAME,
         batch_size=BATCH_SIZE,
     )
 
 .. note::
 
-    As it can be observed the data_loaders are provided based on the corresponding model (`model_name`). Different object detection models consider inputs/outputs in different formats, and thus the `data_splits` are formatted according to the needs of the model.
+    As it can be observed the dataloaders are provided based on the passed model name argument (`model_name`). Different object detection models consider inputs/outputs in different formats, and thus the `data_splits` are formatted according to the needs of the model.
 
 .. _zoo_usage_load_models:
 
 Loading Models
 --------------
 
-Models are provided with pretrained weights on specific datasets. Thus, one could load a model ``X`` pretrained on dataset ``Y``, for getting the appropriate weights. 
+Models are generally provided with weights pretrained on specific datasets. One would load a model ``X`` pretrained on a dataset ``Y`` to get the appropriate weights for the task ``Y``. The ``get_model_by_name`` could used for this purpose. There is also an option to create a new model with an arbitrary number of categories for the downstream tasl and load the weights from another dataset for transfer learning (e.g. to load ``COCO`` weights to train a model on the ``VOC`` dataset). The ``create_model`` method should be generally used for that. Note that ``get_model_by_name`` always returns a fully-trained model for the specified task, this method thus does not allow specifying a custom number of classes.
 
 .. _zoo_usage_load_models_classification:
 
 Classification Models
 ^^^^^^^^^^^^^^^^^^^^^
 
+To get a pretrained classification model one could use
+
 .. code-block:: python
-    
+
     model = get_model_by_name(
         model_name=MODEL_NAME, # example: "resnet18"
         dataset_name=DATASET_NAME, # example: "cifar100"
         pretrained=True, # or False, if pretrained weights are not required
         progress=False, # or True, if a progressbar is required
-        device="cpu", # or "gpu"
+        device="cpu", # or "cuda"
     )
+
+To create a new model with ImageNet weights and a custom number of classes one could use
+
+.. code-block:: python
+
+    model = create_model(
+        model_name=MODEL_NAME, # example: "resnet18"
+        pretraining_dataset=PRETRAIN_DATASET, # example: "imagenet"
+        num_classes=NUM_CLASSES, # example: 42
+        pretrained=True, # or False, if pretrained weights are not required
+        progress=False, # or True, if a progressbar is required
+        device="cpu", # or "cuda"
+    )
+
+
+This method would load the ImageNet-pretrained weights to all the modules of the model where one could match the shape of the weight tensors (i.e. all the layers except the last fully-connected one in the above case).
 
 .. _zoo_usage_load_models_od:
 
 Object Detection Models
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+To create an object detection model pretrained on a given dataset:
+
 .. code-block:: python
 
     model = get_model_by_name(
-        model_name=MODEL_NAME, # example: "vgg16_ssd"
-        dataset_name=DATASET_NAME, # example: "voc_20"
+        model_name=MODEL_NAME, # example: "yolo4s"
+        dataset_name=DATASET_NAME, # example: "voc"
         pretrained=True, # or False, if pretrained weights are not required
         progress=False, # or True, if a progressbar is required
     )
 
-To evaluate a model, the following style of code could be used,
+Likewise, to create a object detection model with an arbitrary number of classes
 
 .. code-block:: python
-    
-    test_loader = data_splits["test"]
-    APs = vgg16_ssd_eval_func(model, test_loader)
 
+    model = create_model(
+        model_name=MODEL_NAME, # example: "yolo4s"
+        num_classes=NUM_CLASSES, # example: 8
+        pretraining_dataset=PRETRAIN_DATASET, # example: "coco"
+        pretrained=True, # or False, if pretrained weights are not required
+        progress=False, # or True, if a progressbar is required
+    )
+
+
+Evaluating models
+-----------------
+
+To create an evaluation fuction for the given model and dataset one could call ``get_eval_function`` passing the ``model_name`` and ``dataset_name`` arguments:
+
+.. code-block:: python
+
+    eval_fn = get_eval_function(
+        model_name=MODEL_NAME, # example: "resnet50"
+        dataset_name=DATASET_NAME, # example: "imagenet"
+    )
+
+
+The returned evaluation function is a Python callable that takes two arguments: a PyTorch model object and a PyTorch dataloader object (logically corresponding to the test split dataloader) and returns a dictionary with metric names as keys and their corresponding values.
 
 Please refer to the tables below for the performance metrics of the pretrained models available in the ``deeplite-torch-zoo``. After downloading the model, please evaluate the model using :ref:`profiler` to verify the metric values. However, one may see different numbers for the execution time as the target hardware and/or the load on the system may impact it.
 
@@ -190,31 +240,44 @@ Please refer to the tables below for the performance metrics of the pretrained m
 Available Models
 ================
 
-There is an important utility function ``list_models`` (available in ``deeplite_torch_zoo.wrappers.wrapper``). This utility will help in listing all available pretrained models or datasets.
+There is an useful utility function ``list_models`` which can be imported as
 
-For instance ``list_models("yolo3")`` will provide the following result. Similar results can be obtained using ``list_models("yo")``.
+.. code-block:: python
+
+    from deeplite_torch_zoo import list_models
+
+
+This utility will help in listing available pretrained models or datasets.
+
+For instance ``list_models("yolo5")`` will provide the list of available pretrained models that contain ``yolo5`` in their model names. Similar results e.g. can be obtained using ``list_models("yo")``. Filtering models by the corresponding task type is also possible by passing the string of the task type with the ``task_type_filter`` argument (the following task types are available: ``classification``, ``object_detection``, ``semantic_segmentation``).
 
 .. code-block:: console
 
-    yolo3
-    yolo4l_leaky
-    yolo4l
-    yolo4m
-    yolo4s
-    yolo4x
-    yolo5_6l
-    yolo5_6m
-    yolo5_6m_relu
-    yolo5_6ma
-    yolo5_6n
-    yolo5_6n_hswish
-    yolo5_6n_relu
-    yolo5_6s
-    yolo5_6s_hswish
-    yolo5_6s_relu
-    yolo5_6sa
-    yolo5_6x
-
+    +------------------+------------------------------------+
+    | Available models |          Source datasets           |
+    +==================+====================================+
+    | yolo5_6l         | voc                                |
+    +------------------+------------------------------------+
+    | yolo5_6m         | coco, voc                          |
+    +------------------+------------------------------------+
+    | yolo5_6m_relu    | person_detection, voc              |
+    +------------------+------------------------------------+
+    | yolo5_6ma        | coco                               |
+    +------------------+------------------------------------+
+    | yolo5_6n         | coco, person_detection, voc, voc07 |
+    +------------------+------------------------------------+
+    | yolo5_6n_hswish  | coco                               |
+    +------------------+------------------------------------+
+    | yolo5_6n_relu    | coco, person_detection, voc        |
+    +------------------+------------------------------------+
+    | yolo5_6s         | coco, person_detection, voc, voc07 |
+    +------------------+------------------------------------+
+    | yolo5_6s_relu    | person_detection, voc              |
+    +------------------+------------------------------------+
+    | yolo5_6sa        | coco, person_detection             |
+    +------------------+------------------------------------+
+    | yolo5_6x         | voc                                |
+    +------------------+------------------------------------+
 
 
 
@@ -299,11 +362,11 @@ Benchmark Results
 
 .. _zoo_benchmark_results_voc_od:
 
-Models on VOC Object Detection Dataset 
+Models on VOC Object Detection Dataset
 --------------------------------------
 
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------------+
-| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                                         |
+| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                                         |
 |   |                           | `mean Average Precision <https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173>`_            |           |                 |                    |                      |                                                                                                            |
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------------+
 | 1 | vgg16_ssd                 | 0.7733                                                                                                                               | 100.2731  | 31.4368         | 26.2860            | 309.7318             | `download <http://download.deeplite.ai/zoo/models/vgg16-ssd-voc-mp-0_7726-b1264e8beec69cbc.pth>`_          |
@@ -347,11 +410,11 @@ Models on VOC Object Detection Dataset
 
 .. _zoo_benchmark_results_coco_od:
 
-Models on COCO Object Detection Dataset 
+Models on COCO Object Detection Dataset
 --------------------------------------
 
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+-------------------------------------------------------------------------------------------------------------+
-| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                                          |
+| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                                          |
 |   |                           | `mean Average Precision <https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173>`_            |           |                 |                    |                      |                                                                                                             |
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+-------------------------------------------------------------------------------------------------------------+
 | 1 | yolo4m                    | 0.309                                                                                                                                | 94.133    | 11.44           | 24.67              | 548.83               | `download <http://download.deeplite.ai/zoo/models/yolov4_6m-coco-80classes-309_02b2013002a4724b.pt>`_       |
@@ -371,10 +434,10 @@ Models on COCO Object Detection Dataset
 
 .. _zoo_benchmark_results_coco_person_od:
 
-Models on COCO Person Detection Dataset 
+Models on COCO Person Detection Dataset (only `person` class from the 80-class COCO dataset)
 ----------------------------------------------
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------------------------+
-| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                                                     |
+| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                                                     |
 |   |                           | `mean Average Precision <https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173>`_            |           |                 |                    |                      |                                                                                                                        |
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------------------------+
 | 1 | yolo5_6m_relu             | 0.709                                                                                                                                | 79.61     | 6.015           | 20.87              | 277.36               | `download <http://download.deeplite.ai/zoo/models/yolov5_6m_relu-person-detection-1class_709-3f59321c540d2d1c.pt>`_    |
@@ -392,10 +455,10 @@ Models on COCO Person Detection Dataset
 
 .. _zoo_benchmark_results_voc07_od:
 
-Models on VOC Seven Class Dataset (Subset classes are from VOC 20 Classes)
+Models on VOC2007 Dataset (VOC2007 train split taken as training data and VOC2007 val split used for testing)
 ----------------------------------------------
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------------------------+
-| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                                                     |
+| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                                                     |
 |   |                           | `mean Average Precision <https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173>`_            |           |                 |                    |                      |                                                                                                                        |
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------------------------+
 | 1 | yolo5_6n                  | 0.620                                                                                                                                | 6.83      | 1.043           | 1.79               | 115.40               | `download <http://download.deeplite.ai/zoo/models/yolov5_6n-voc07-20classes-620_037230667eff7b12.pt>`_                 |
@@ -406,11 +469,11 @@ Models on VOC Seven Class Dataset (Subset classes are from VOC 20 Classes)
 
 .. _zoo_benchmark_results_voc_seg:
 
-Models on VOC Segmentation Dataset 
+Models on VOC Segmentation Dataset
 ----------------------------------
 
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------------+
-| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                                         |
+| # | Architecture (model_name) |                                                                                                                                      | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                                         |
 |   |                           | `mean Inter. over Union`                                                                                                             |           |                 |                    |                      |                                                                                                            |
 +---+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------------+
 | 1 | unet_scse_resnet18        | 0.582                                                                                                                                | 83.3697   | 20.8930         | 21.8549            | 575.0954             | `download <http://download.deeplite.ai/zoo/models/unet_scse_resnet18-voc-miou_593-1e0987c833e9abd7.pth>`_  |
@@ -430,7 +493,7 @@ Models on MNIST dataset
 -----------------------
 
 +---+---------------------------+---------+----------+-----------------+--------------------+----------------------+---------------------------------------------------------------------------------------+
-| # | Architecture (model_name) | Top1 (%)| Size (MB)| MACs (Millions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                    |
+| # | Architecture (model_name) | Top1 (%)| Size (MB)| MACs (Millions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                    |
 +---+---------------------------+---------+----------+-----------------+--------------------+----------------------+---------------------------------------------------------------------------------------+
 | 1 | lenet5                    | 99.1199 | 0.1695   | 0.2930          | 0.0444             | 0.1904               | `download <http://download.deeplite.ai/zoo/models/lenet-mnist-e5e2d99e08460491.pth>`_ |
 +---+---------------------------+---------+----------+-----------------+--------------------+----------------------+---------------------------------------------------------------------------------------+
@@ -447,7 +510,7 @@ Models on CIFAR100 dataset
 ----------------------------
 
 +----+---------------------------+----------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------+
-| #  | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                                   |
+| #  | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                                   |
 +----+---------------------------+----------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------+
 | 1  | resnet18                  | 76.8295  | 42.8014   | 0.5567          | 11.2201            | 48.4389              | `download <http://download.deeplite.ai/zoo/models/resnet18-cifar100-86b0c368c511bd57.pth>`_          |
 +----+---------------------------+----------+-----------+-----------------+--------------------+----------------------+------------------------------------------------------------------------------------------------------+
@@ -476,7 +539,7 @@ Models on VWW dataset
 ---------------------
 
 +---+---------------------------+----------+-----------+-----------------+--------------------+----------------------+-------------------------------------------------------------------------------------------------------+
-| # | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                                    |
+| # | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                                    |
 +---+---------------------------+----------+-----------+-----------------+--------------------+----------------------+-------------------------------------------------------------------------------------------------------+
 | 1 | resnet18                  | 93.5496  | 42.6389   | 1.8217          | 11.1775            | 74.6057              | `download <http://download.deeplite.ai/zoo/models/resnet18-vww-7f02ab4b50481ab7.pth>`_                |
 +---+---------------------------+----------+-----------+-----------------+--------------------+----------------------+-------------------------------------------------------------------------------------------------------+
@@ -495,7 +558,7 @@ Models on Imagenet10 dataset
 ----------------------------
 
 +---+---------------------------+----------+-----------+-----------------+--------------------+----------------------+----------------------------------------------------------------------------------------+
-| # | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                     |
+| # | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                     |
 +---+---------------------------+----------+-----------+-----------------+--------------------+----------------------+----------------------------------------------------------------------------------------+
 | 1 | resnet18                  | 93.8294  | 42.6546   | 1.8217          | 11.1816            | 74.6215              | `download <http://download.deeplite.ai/zoo/models/resnet18-vww-7f02ab4b50481ab7.pth>`_ |
 +---+---------------------------+----------+-----------+-----------------+--------------------+----------------------+----------------------------------------------------------------------------------------+
@@ -508,7 +571,7 @@ Models on Imagenet16 dataset
 ----------------------------
 
 +---+---------------------------+----------+-----------+-----------------+--------------------+----------------------+----------------------------------------------------------------------------------------+
-| # | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights                                                                     |
+| # | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights                                                                     |
 +---+---------------------------+----------+-----------+-----------------+--------------------+----------------------+----------------------------------------------------------------------------------------+
 | 1 | resnet18                  | 94.5115  | 42.6663   | 1.8217          | 11.1816            | 74.6332              | `download <http://download.deeplite.ai/zoo/models/resnet18-vww-7f02ab4b50481ab7.pth>`_ |
 +---+---------------------------+----------+-----------+-----------------+--------------------+----------------------+----------------------------------------------------------------------------------------+
@@ -521,7 +584,7 @@ Models on Imagenet dataset (from torchvision)
 ---------------------------------------------
 
 +----+---------------------------+----------+-----------+-----------------+--------------------+----------------------+--------------------+
-| #  | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint(MB) | Pretrained Weights |
+| #  | Architecture (model_name) | Top1 (%) | Size (MB) | MACs (Billions) | #Params (Millions) | Memory Footprint (MB)| Pretrained Weights |
 +----+---------------------------+----------+-----------+-----------------+--------------------+----------------------+--------------------+
 | 1  | resnet18                  | 69.7319  | 44.5919   | 1.8222          | 11.6895            | 76.5664              | .                  |
 +----+---------------------------+----------+-----------+-----------------+--------------------+----------------------+--------------------+
@@ -566,18 +629,12 @@ Models on Imagenet dataset (from torchvision)
 | 21 | vgg19_bn                  | 74.1900  | 548.0890  | 19.6976         | 143.6782           | 724.6669             | .                  |
 +----+---------------------------+----------+-----------+-----------------+--------------------+----------------------+--------------------+
 
-Models on Imagenet dataset (from timm)
+Models on Imagenet dataset (timm/torchvision)
 ---------------------------------------------
-- Zoo has the support for timm models and the reference list of models can be found `here <https://github.com/Deeplite/deeplite-torch-zoo/blob/4257f182160578b40e3f3751a0393cb2c9eb5374/deeplite_torch_zoo/wrappers/models/classification/imagenet/timm_models.py#L5>`_
+
+The zoo enables to load any ImageNet-pretrained model from the `timm repo <https://github.com/rwightman/pytorch-image-models>`_ as well as any ImageNet model from torchvision. In case the model names overlap with timm, the corresponding timm model is loaded.
 
 - **Model Size:** Memory consumed by the parameters (weights and biases) of the model
 - **MACs:** Summation of Multiply-Add Cumulations (MACs) per single image (batch_size=1)
-- **#Parames:** Total number of parameters (trainable and non-trainable) in the model
+- **#Parameters:** Total number of parameters (trainable and non-trainable) in the model
 - **Memory Footprint:** Total memory consumed by the parameters (weights and biases) and activations (per layer) per single image (batch_size=1)
-
-The host machine specifications used to perform the reported benchmarks:
-
-- `NVIDIA TITAN V <https://www.nvidia.com/en-us/titan/titan-v/>`_
-- Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-- 512G SSD HardDrive
-- 64G RAM
