@@ -18,7 +18,7 @@ ARG PYSPARK_PACKAGE=pyspark==3.1.1
 ARG SPARK_PACKAGE=spark-3.1.1/spark-3.1.1-bin-hadoop2.7.tgz
 
 # Python 3.7 is supported by Ubuntu Bionic out of the box
-ARG PYTHON_VERSION=3.7
+ARG PYTHON_VERSION=3.6
 
 # Set default shell to /bin/bash
 SHELL ["/bin/bash", "-cu"]
@@ -66,9 +66,13 @@ RUN cat /etc/ssh/ssh_config | grep -v StrictHostKeyChecking > /etc/ssh/ssh_confi
 
 RUN ln -s /usr/bin/python${PYTHON_VERSION} /usr/bin/python
 
-RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
+# RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
+#     python get-pip.py && \
+#     rm get-pip.py
+
+RUN curl -O https://bootstrap.pypa.io/pip/3.6/get-pip.py && \
     python get-pip.py && \
-    rm get-pip.py
+    python -m pip install --upgrade "pip < 22.0"
 
 # Install PyTorch, TensorFlow, Keras and MXNet
 RUN pip install --no-cache-dir \
@@ -115,7 +119,7 @@ RUN ldconfig /usr/local/cuda/targets/x86_64-linux/lib/stubs && \
 # install neutrino
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN pip install --upgrade pip
+# RUN pip install --upgrade pip
 RUN pip install --no-cache-dir neutrino-engine
 RUN pip install --no-cache-dir neutrino-torch
 RUN pip install --no-cache-dir deeplite-torch-zoo
