@@ -35,9 +35,10 @@ Classification Example
 
     from neutrino.framework.torch_framework import TorchFramework
     from neutrino.job import Neutrino
-    
-    from deeplite_torch_zoo.wrappers.wrapper import get_data_splits_by_name, get_model_by_name
-    
+
+    from deeplite_torch_zoo import get_data_splits_by_name, get_model_by_name
+
+
     if __name__ == "__main__":
         parser = argparse.ArgumentParser()
         # model/dataset args
@@ -46,7 +47,7 @@ Classification Example
         parser.add_argument('-b', '--batch_size', type=int, metavar='N', default=128, help='mini-batch size')
         parser.add_argument('-j', '--workers', type=int, metavar='N', default=4, help='number of data loading workers')
         parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18', help='model architecture')
-    
+
         # neutrino args
         parser.add_argument('-d', '--delta', type=float, metavar='DELTA', default=1, help='accuracy drop tolerance')
         parser.add_argument('-l', '--level', type=int, default=1, help='level', choices=(1, 2))
@@ -57,32 +58,48 @@ Classification Example
         parser.add_argument('--horovod', action='store_true', help="activate horovod")
         parser.add_argument('--bn_fuse', action='store_true', help="fuse batch normalization layers")
         parser.add_argument('--device', type=str, metavar='DEVICE', default='GPU', help='Device to use, CPU or GPU')
-    
+        parser.add_argument('--lr', default=0.1, type=float, 
+                            help='learning rate for training model. This LR is internally scaled by num gpus during distributed training')
+        parser.add_argument('--ft_lr', default=0.01, type=float, help='learning rate during fine-tuning iterations')
+        parser.add_argument('--ft_epochs', default=2, type=int, help='number of fine-tuning epochs')
+
         args = parser.parse_args()
         device_map = {'CPU': 'cpu', 'GPU': 'cuda'}
-    
+
         data_splits = get_data_splits_by_name(dataset_name=args.dataset,
+                                              model_name=args.arch,
                                               data_root=args.data_root,
                                               batch_size=args.batch_size,
                                               num_workers=args.workers,
                                               device=device_map[args.device])
-    
+
         reference_model = get_model_by_name(model_name=args.arch,
                                             dataset_name=args.dataset,
                                             pretrained=True,
                                             progress=True,
                                             device=device_map[args.device])
-    
-        config = {'deepsearch': args.deepsearch,
-                  'level': args.level,
-                  'delta': args.delta,
-                  'device': args.device,
-                  'onnx_precision': 'fp16' if args.fp16 else 'fp32',
-                  'optimization': args.optimization,
-                  'use_horovod': args.horovod,
-                  'bn_fusion': args.bn_fuse,
-                  }
-    
+
+        config = {
+            'deepsearch': args.deepsearch,
+            'level': args.level,
+            'delta': args.delta,
+            'device': args.device,
+            'optimization': args.optimization,
+            'use_horovod': args.horovod,
+            'bn_fusion': args.bn_fuse,
+            'export': {
+                'format': ['onnx'],
+                'kwargs': {'precision': 'fp16' if args.fp16 else 'fp32'}
+            },
+            'full_trainer': {'optimizer': {'lr': args.lr}},
+            'fine_tuner': {
+                'loop_params': {
+                    'epochs': args.ft_epochs,
+                    'optimizer': {'lr': args.ft_lr}
+                }
+            }
+        }
+
         optimized_model = Neutrino(framework=TorchFramework(),
                                    data=data_splits,
                                    model=reference_model,
@@ -533,7 +550,7 @@ To run the sample:
 
 .. code-block:: console
 
-    $ python hello_neutrino_classifier.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 3 --deepsearch --batch_size 256
+    $ python hello_neutrino_classifier.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 2 --deepsearch --batch_size 256
 
 The output:
 
@@ -546,7 +563,7 @@ The output:
     Files already downloaded and verified
     Files already downloaded and verified
     2020-12-09 15:35:14 - INFO: Starting job with ID: 67CA3456
-    2020-06-26 16:33:49 - INFO: Args: --dataset, cifar100, --workers, 1, -a, vgg19, --delta, 1, --level, 3, --deepsearch, --batch_size, 256
+    2020-06-26 16:33:49 - INFO: Args: --dataset, cifar100, --workers, 1, -a, vgg19, --delta, 1, --level, 2, --deepsearch, --batch_size, 256
     2020-06-26 16:33:49 - INFO:
     +------------------------------------------------------------------------------------+
     | Neutrino 1.0.0                                                 26/06/2020 16:33:49 |
@@ -722,7 +739,7 @@ Horovod (for more information please visit `Horovod in Docker <https://github.co
 
 .. code-block:: console
 
-    $ horovodrun -np 4 -H localhost:4 python hello_neutrino.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 3 --deepsearch --horovod --batch_size 256
+    $ horovodrun -np 4 -H localhost:4 python hello_neutrino.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 2 --deepsearch --horovod --batch_size 256
 
 .. _run_multi_multi_gpu:
 
@@ -735,7 +752,7 @@ Running on multi-gpu on multiple machines
 
 .. code-block:: console
 
-    $ horovodrun -np 8 -H hostname1:4,hostname2:4 python hello_neutrino.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 3 --deepsearch --horovod --batch_size 256
+    $ horovodrun -np 8 -H hostname1:4,hostname2:4 python hello_neutrino.py --dataset cifar100 --workers 1 -a vgg19 --delta 1 --level 2 --deepsearch --horovod --batch_size 256
 
 `Horovod on multiple machines <https://github.com/horovod/horovod/blob/master/docs/docker.rst#running-on-multiple-machines>`_
 
