@@ -331,11 +331,6 @@ Export
         }
 
 
-BatchNorm Fusing
-^^^^^^^^^^^^^^^^
-
-    The engine fuses BachNorm layers before export if **bn_fusion=True**. Click `here <https://tehnokv.com/posts/fusing-batchnorm-and-conv/>`_
-    for more information about Fusing batch normalization and convolution in runtime.
 
 ONNX/DLRT Export Options
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -424,7 +419,6 @@ Finally, you just need to call `run` function from ``Neutrino`` class to start t
     from neutrino.job import Neutrino
     config = {
         'deepsearch': args.deepsearch, #(boolean), (default = False)
-        'bn_fusion':args.bn_fuse #(boolean)
         'delta': args.delta, #(between 0 to 100), (default = 1)
         'device': args.device, # 'GPU' or 'CPU' (default = 'GPU')
         'use_horovod': args.horovod, #(boolean), (default = False)

@@ -56,7 +56,6 @@ Classification Example
         parser.add_argument('--fp16', action='store_true', help="export to fp16 as well if it is possible")
         parser.add_argument('--dryrun', action='store_true', help="force all loops to early break")
         parser.add_argument('--horovod', action='store_true', help="activate horovod")
-        parser.add_argument('--bn_fuse', action='store_true', help="fuse batch normalization layers")
         parser.add_argument('--device', type=str, metavar='DEVICE', default='GPU', help='Device to use, CPU or GPU')
         parser.add_argument('--lr', default=0.1, type=float, 
                             help='learning rate for training model. This LR is internally scaled by num gpus during distributed training')
@@ -86,7 +85,6 @@ Classification Example
             'device': args.device,
             'optimization': args.optimization,
             'use_horovod': args.horovod,
-            'bn_fusion': args.bn_fuse,
             'export': {
                 'format': ['onnx'],
                 'kwargs': {'precision': 'fp16' if args.fp16 else 'fp32'}
@@ -182,7 +180,6 @@ SSD Family
         parser.add_argument('--horovod', action='store_true', help="activate horovod")
         parser.add_argument('--device', type=str, metavar='DEVICE', default='GPU', help='Device to use, cpu or cuda',
                             choices=['GPU', 'CPU'])
-        parser.add_argument('--bn_fuse', action='store_true', help="fuse batch normalization layers")
 
         args = parser.parse_args()
         device_map = {'CPU': 'cpu', 'GPU': 'cuda'}
@@ -220,7 +217,6 @@ SSD Family
                 'device': args.device,
                 'use_horovod': args.horovod,
                 'task_type': 'object_detection',
-                'bn_fusion': args.bn_fuse,
                 }
 
         optimized_model = Neutrino(TorchFramework(),
@@ -300,7 +296,6 @@ YOLO Family
         parser.add_argument('--horovod', action='store_true', help="activate horovod")
         parser.add_argument('--device', type=str, metavar='DEVICE', default='GPU', help='Device to use, CPU or GPU',
                             choices=['GPU', 'CPU'])
-        parser.add_argument('--bn_fuse', action='store_true', help="fuse batch normalization layers")
         args = parser.parse_args()
         device_map = {'CPU': 'cpu', 'GPU': 'cuda'}
 
@@ -339,7 +334,6 @@ YOLO Family
                 'device': args.device,
                 'use_horovod': args.horovod,
                 'task_type': 'object_detection',
-                'bn_fusion': args.bn_fuse,
                 }
 
         optimized_model = Neutrino(TorchFramework(),
@@ -456,7 +450,6 @@ UNet family
         parser.add_argument('--device', type=str, metavar='DEVICE', default='GPU',
                             help='Device to use, CPU or GPU (however locked to GPU for now)',
                             choices=['GPU', 'CPU'])
-        parser.add_argument('--bn_fuse', action='store_true', help="fuse batch normalization layers")
 
         args = parser.parse_args()
         device_map = {'CPU': 'cpu', 'GPU': 'cuda'}
@@ -512,7 +505,6 @@ UNet family
                 'device': args.device,
                 'use_horovod': args.horovod,
                 'task_type': 'segmentation',
-                'bn_fusion': args.bn_fuse,
                 'full_trainer': {'eval_key': eval_key,
                                 # uncomment these two below if you want to try other optimizer / scheduler
                                 # 'optimizer': UNetNativeOptimizerFactory,
