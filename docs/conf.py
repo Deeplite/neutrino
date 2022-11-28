@@ -163,5 +163,6 @@ texinfo_documents = [
 def setup(app):
     app.add_css_file('css/dl_theme.css')
     app.add_css_file('css/table_theme.css')
+    app.add_css_file('css/sourcecode.css')
 
 
