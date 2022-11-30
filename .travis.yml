@@ -15,8 +15,8 @@ install:
   
 # command to run tests
 script:
-  - cd docs
   - git clone https://github.com/Deeplite/neutrino-examples.git
+  - cd docs
   - python -m sphinx -b html . build/
 
 deploy:
