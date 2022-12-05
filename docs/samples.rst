@@ -140,7 +140,6 @@ The output:
     |     Computational Complexity (GigaMACs) |               0.3995|
     |         Number of Parameters (Millions) |              20.0867|
     |                   Memory Footprint (MB) |              80.2270|
-    |                     Execution Time (ms) |               1.8288|
     +-----------------------------------------+---------------------+
     Note:
     * Evaluation Metric: Computed performance of the model on the given data
@@ -148,7 +147,6 @@ The output:
     * Computational Complexity: Summation of Multiply-Add Cumulations (MACs) per single image (batch_size=1)
     * Number of Parameters: Total number of parameters (trainable and non-trainable) in the model
     * Memory Footprint: Total memory consumed by the parameters (weights and biases) and activations (per layer) per single image (batch_size=1)
-    * Execution Time: On current device, time required for the forward pass per single image (batch_size=1)
     +---------------------------------------------------------------+
     2020-06-26 16:33:54 - INFO: Analyzing design space...
     2020-06-26 16:33:56 - INFO:
@@ -222,7 +220,6 @@ The output:
     |     Computational Complexity (GigaMACs) |                     5.34x|                    0.0748|                    0.3995|
     |         Number of Parameters (Millions) |                    28.14x|                    0.7138|                   20.0867|
     |                   Memory Footprint (MB) |                     1.98x|                    3.8986|                    7.7362|
-    |                     Execution Time (ms) |                     1.60x|                    0.0376|                    0.0603|
     +-----------------------------------------+--------------------------+--------------------------+--------------------------+
     Note:
     * Evaluation Metric: Computed performance of the model on the given data
@@ -230,7 +227,6 @@ The output:
     * Computational Complexity: Summation of Multiply-Add Cumulations (MACs) per single image (batch_size=1)
     * Number of Parameters: Total number of parameters (trainable and non-trainable) in the model
     * Memory Footprint: Total memory consumed by parameters and activations per single image (batch_size=1)
-    * Execution Time: On current device, time required for the forward pass per single image
     +--------------------------------------------------------------------------------------------------------------------------+
     2020-12-09 15:46:59 - INFO: The engine successfully optimized your reference model, enjoy!
     2020-12-09 15:46:59 - INFO: Exporting to Native and ONNX formats
