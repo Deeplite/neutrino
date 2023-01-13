@@ -37,7 +37,7 @@ Online Key
 ----------
 
 You need a valid license to use Neutrino engine. After you get your license key (license key format: AAAAA-AAAAA-AAAAA-AAAAA)
-please set the ``$NEUTRINO_LICENSE`` env var to that value.
+please set the ``NEUTRINO_LICENSE`` env var to that value.
 
 .. code-block:: console
 
@@ -60,11 +60,11 @@ If you have no or limited internet availability, you can obtain a license file s
     Helpers.GetMachineCode()
 
 - Click on activate. The license file will be downloaded.
-- Copy the license file to location of your choice and then set the ``$NEUTRINO_LICENSE_FILE`` env variable to the absolute path of this location.
+- Copy the license file to location of your choice and then set the ``NEUTRINO_LICENSE_FILE`` env variable to the absolute path of this location.
 
 .. code-block:: console
 
-    $ export $NEUTRINO_LICENSE_FILE=LICENSE_FILE_PATH
+    $ export NEUTRINO_LICENSE_FILE=LICENSE_FILE_PATH
 
 To check your license value:
 
@@ -76,4 +76,4 @@ To check your license value:
 
 .. note::
 
-    You can also set ``$NEUTRINO_LICENSE`` or ``$NEUTRINO_LICENSE_FILE`` in your ``./bashrc`` file as well `(How do I set environment variables?) <https://askubuntu.com/questions/730/how-do-i-set-environment-variables>`_.
+    You can also set ``NEUTRINO_LICENSE`` or ``NEUTRINO_LICENSE_FILE`` in your ``./bashrc`` file as well `(How do I set environment variables?) <https://askubuntu.com/questions/730/how-do-i-set-environment-variables>`_.
